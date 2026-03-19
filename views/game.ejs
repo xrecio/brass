@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brass: Lancashire - Game</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/lobby" class="nav-brand">Brass: Lancashire</a>
+    <div class="nav-links">
+      <a href="/wiki" target="_blank" class="nav-link">Wiki</a>
+      <span class="nav-user"><%= user.username %></span>
+    </div>
+  </nav>
+
+  <div class="game-container">
+    <!-- Player info bar -->
+    <div class="player-bar" id="player-bar"></div>
+
+    <!-- Main game area -->
+    <div class="game-main">
+      <!-- Board -->
+      <div class="board-container" id="board-container">
+        <svg id="game-board" viewBox="0 0 600 520" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+
+      <!-- Side panel -->
+      <div class="side-panel">
+        <!-- Game info -->
+        <div class="game-info-panel" id="game-info"></div>
+
+        <!-- Markets -->
+        <div class="market-panel" id="market-panel"></div>
+
+        <!-- Action controls -->
+        <div class="action-panel" id="action-panel"></div>
+
+        <!-- Hand -->
+        <div class="hand-panel" id="hand-panel"></div>
+
+        <!-- Industry mat -->
+        <div class="mat-panel" id="mat-panel"></div>
+      </div>
+    </div>
+
+    <!-- Game log -->
+    <div class="log-panel" id="log-panel"></div>
+  </div>
+
+  <script>
+    // Inject initial state
+    const GAME_ID = <%= game.id %>;
+    const USER_ID = <%= userId %>;
+    let gameState = <%- JSON.stringify(state) %>;
+    let stateVersion = <%= version %>;
+    const IS_MEMBER = <%= isMember %>;
+  </script>
+  <script src="/js/board-data-client.js"></script>
+  <script src="/js/board-renderer.js"></script>
+  <script src="/js/game-ui.js"></script>
+</body>
+</html>

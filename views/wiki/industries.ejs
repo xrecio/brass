@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brass: Lancashire - Industries</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/lobby" class="nav-brand">Brass: Lancashire</a>
+    <div class="nav-links"><a href="/wiki" class="nav-link">Wiki</a></div>
+  </nav>
+  <div class="wiki-container">
+    <div class="wiki-nav">
+      <a href="/wiki/rules">Rules</a>
+      <a href="/wiki/actions">Actions</a>
+      <a href="/wiki/industries">Industries</a>
+      <a href="/wiki/strategy">Strategy</a>
+    </div>
+
+    <h1>Industries Reference</h1>
+
+    <h2>Cotton Mill</h2>
+    <p>Flips when sold via Sell Cotton action. Main source of income.</p>
+    <table class="wiki-table">
+      <tr><th>Level</th><th>Cost</th><th>Coal</th><th>Iron</th><th>Income</th><th>VP</th></tr>
+      <tr><td>1</td><td>£12</td><td>0</td><td>0</td><td>+5</td><td>5</td></tr>
+      <tr><td>2</td><td>£14</td><td>1</td><td>0</td><td>+5</td><td>5</td></tr>
+      <tr><td>3</td><td>£16</td><td>1</td><td>1</td><td>+4</td><td>9</td></tr>
+      <tr><td>4</td><td>£18</td><td>1</td><td>1</td><td>+3</td><td>12</td></tr>
+    </table>
+
+    <h2>Coal Mine</h2>
+    <p>Flips when all coal cubes are removed. Coal must be transported via links.</p>
+    <table class="wiki-table">
+      <tr><th>Level</th><th>Cost</th><th>Iron</th><th>Cubes</th><th>Income</th><th>VP</th></tr>
+      <tr><td>1</td><td>£5</td><td>0</td><td>2</td><td>+4</td><td>1</td></tr>
+      <tr><td>2</td><td>£7</td><td>0</td><td>3</td><td>+7</td><td>2</td></tr>
+      <tr><td>3</td><td>£8</td><td>1</td><td>4</td><td>+6</td><td>3</td></tr>
+      <tr><td>4</td><td>£10</td><td>1</td><td>5</td><td>+5</td><td>4</td></tr>
+    </table>
+
+    <h2>Iron Works</h2>
+    <p>Flips when all iron cubes are removed. Iron can be used from anywhere (no transport).</p>
+    <table class="wiki-table">
+      <tr><th>Level</th><th>Cost</th><th>Coal</th><th>Cubes</th><th>Income</th><th>VP</th></tr>
+      <tr><td>1</td><td>£5</td><td>1</td><td>4</td><td>+3</td><td>3</td></tr>
+      <tr><td>2</td><td>£7</td><td>1</td><td>4</td><td>+3</td><td>5</td></tr>
+      <tr><td>3</td><td>£9</td><td>1</td><td>5</td><td>+2</td><td>7</td></tr>
+      <tr><td>4</td><td>£12</td><td>1</td><td>6</td><td>+1</td><td>9</td></tr>
+    </table>
+
+    <h2>Port</h2>
+    <p>Flips when used to sell cotton. Also enables access to external/distant markets.</p>
+    <table class="wiki-table">
+      <tr><th>Level</th><th>Cost</th><th>Income</th><th>VP</th></tr>
+      <tr><td>1</td><td>£9</td><td>+3</td><td>2</td></tr>
+      <tr><td>2</td><td>£12</td><td>+3</td><td>4</td></tr>
+    </table>
+
+    <h2>Shipyard</h2>
+    <p>Flips immediately when built. High VP but requires developing through lower levels and specific locations.</p>
+    <table class="wiki-table">
+      <tr><th>Level</th><th>Cost</th><th>Coal</th><th>Iron</th><th>Income</th><th>VP</th><th>Era</th></tr>
+      <tr><td>0</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>Must develop through</td></tr>
+      <tr><td>1</td><td>£16</td><td>1</td><td>1</td><td>+2</td><td>10</td><td>Canal only</td></tr>
+      <tr><td>2</td><td>£25</td><td>1</td><td>1</td><td>+1</td><td>18</td><td>Rail only</td></tr>
+    </table>
+
+    <h2>Locations</h2>
+    <table class="wiki-table">
+      <tr><th>Location</th><th>Industry Slots</th></tr>
+      <tr><td>Lancaster</td><td>Cotton, Cotton</td></tr>
+      <tr><td>Barrow-in-Furness</td><td>Cotton, Shipyard</td></tr>
+      <tr><td>Fleetwood</td><td>Port</td></tr>
+      <tr><td>Preston</td><td>Cotton, Cotton, Port</td></tr>
+      <tr><td>Blackburn</td><td>Cotton, Cotton</td></tr>
+      <tr><td>Burnley</td><td>Cotton, Coal</td></tr>
+      <tr><td>Colne</td><td>Cotton, Coal</td></tr>
+      <tr><td>Wigan</td><td>Cotton, Coal</td></tr>
+      <tr><td>Bolton</td><td>Cotton, Cotton, Iron</td></tr>
+      <tr><td>Bury</td><td>Cotton, Cotton</td></tr>
+      <tr><td>Rochdale</td><td>Cotton, Cotton</td></tr>
+      <tr><td>Oldham</td><td>Cotton, Cotton</td></tr>
+      <tr><td>Manchester</td><td>Cotton, Cotton, Cotton, Cotton</td></tr>
+      <tr><td>Stockport</td><td>Cotton, Cotton</td></tr>
+      <tr><td>Liverpool</td><td>Port, Port, Port</td></tr>
+      <tr><td>Birkenhead</td><td>Shipyard</td></tr>
+      <tr><td>Warrington</td><td>Cotton, Iron</td></tr>
+      <tr><td>Northwich</td><td>Cotton, Iron</td></tr>
+      <tr><td>Ellesmere Port</td><td>Port, Port</td></tr>
+    </table>
+  </div>
+</body>
+</html>

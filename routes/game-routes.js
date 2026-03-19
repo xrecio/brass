@@ -1,0 +1,113 @@
+const express = require('express');
+const { requireLogin, requireLoginAPI } = require('../lib/auth');
+const { applyAction, getValidActions } = require('../lib/game-engine');
+const db = require('../lib/db');
+const router = express.Router();
+
+router.get('/games/:id', requireLogin, (req, res) => {
+  const gameId = parseInt(req.params.id);
+  const userId = req.session.user.id;
+
+  const game = db.findGame(gameId);
+  if (!game) return res.redirect('/lobby');
+  if (game.status === 'waiting') return res.redirect('/lobby');
+
+  const isMember = db.isGameMember(gameId, userId);
+  const gs = db.getGameState(gameId);
+  if (!gs) return res.redirect('/lobby');
+
+  res.render('game', {
+    game,
+    state: JSON.parse(gs.state),
+    version: gs.version,
+    userId,
+    isMember
+  });
+});
+
+// API: Get current state (for polling)
+router.get('/api/games/:id/state', requireLoginAPI, (req, res) => {
+  const gameId = parseInt(req.params.id);
+  const clientVersion = parseInt(req.query.version) || -1;
+
+  const gs = db.getGameState(gameId);
+  if (!gs) return res.status(404).json({ error: 'Game not found' });
+
+  if (gs.version === clientVersion) {
+    return res.status(304).end();
+  }
+
+  const state = JSON.parse(gs.state);
+  const userId = req.session.user.id;
+  const sanitized = sanitizeState(state, userId);
+
+  res.json({ state: sanitized, version: gs.version });
+});
+
+// API: Submit action
+router.post('/api/games/:id/action', requireLoginAPI, (req, res) => {
+  const gameId = parseInt(req.params.id);
+  const userId = req.session.user.id;
+  const action = req.body;
+
+  const gs = db.getGameState(gameId);
+  if (!gs) return res.status(404).json({ error: 'Game not found' });
+
+  const state = JSON.parse(gs.state);
+  const result = applyAction(state, userId, action);
+
+  if (result.error) {
+    return res.status(400).json({ error: result.error });
+  }
+
+  // Save with optimistic concurrency
+  const success = db.updateGameState(gameId, JSON.stringify(result.newState), gs.version);
+  if (!success) {
+    return res.status(409).json({ error: 'State changed, please refresh' });
+  }
+
+  // Log action
+  db.addGameAction(gameId, userId, action.type, JSON.stringify(action), gs.version);
+
+  // Update game status if finished
+  if (result.newState.phase === 'finished') {
+    db.updateGame(gameId, { status: 'finished' });
+  }
+
+  // Check if next player is a bot
+  const botModule = require('../lib/bot-engine');
+  botModule.checkAndPlayBot(gameId);
+
+  const newGs = db.getGameState(gameId);
+  res.json({
+    state: sanitizeState(JSON.parse(newGs.state), userId),
+    version: newGs.version
+  });
+});
+
+// API: Get valid actions
+router.get('/api/games/:id/actions', requireLoginAPI, (req, res) => {
+  const gameId = parseInt(req.params.id);
+  const userId = req.session.user.id;
+
+  const gs = db.getGameState(gameId);
+  if (!gs) return res.status(404).json({ error: 'Game not found' });
+
+  const state = JSON.parse(gs.state);
+  const actions = getValidActions(state, userId);
+
+  res.json({ actions });
+});
+
+function sanitizeState(state, userId) {
+  const sanitized = JSON.parse(JSON.stringify(state));
+  for (const player of sanitized.players) {
+    if (player.userId !== userId) {
+      player.handCount = player.hand.length;
+      player.hand = [];
+    }
+  }
+  return sanitized;
+}
+
+module.exports = router;

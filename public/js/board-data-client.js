@@ -1,0 +1,66 @@
+// Client-side board data for SVG rendering
+const BOARD = {
+  locations: {
+    lancaster:      { name: 'Lancaster',        x: 240, y: 55 },
+    barrow:         { name: 'Barrow-in-Furness', x: 105, y: 35 },
+    fleetwood:      { name: 'Fleetwood',         x: 140, y: 80 },
+    preston:        { name: 'Preston',           x: 225, y: 140 },
+    blackburn:      { name: 'Blackburn',         x: 340, y: 140 },
+    burnley:        { name: 'Burnley',           x: 420, y: 95 },
+    colne:          { name: 'Colne',             x: 510, y: 65 },
+    wigan:          { name: 'Wigan',             x: 200, y: 250 },
+    bolton:         { name: 'Bolton',            x: 320, y: 230 },
+    bury:           { name: 'Bury',              x: 410, y: 210 },
+    rochdale:       { name: 'Rochdale',          x: 500, y: 200 },
+    oldham:         { name: 'Oldham',            x: 510, y: 275 },
+    manchester:     { name: 'Manchester',        x: 400, y: 330 },
+    stockport:      { name: 'Stockport',         x: 470, y: 400 },
+    liverpool:      { name: 'Liverpool',         x: 70,  y: 310 },
+    birkenhead:     { name: 'Birkenhead',        x: 50,  y: 400 },
+    warrington:     { name: 'Warrington',        x: 210, y: 370 },
+    northwich:      { name: 'Northwich',         x: 280, y: 440 },
+    ellesmerePort:  { name: 'Ellesmere Port',    x: 140, y: 440 }
+  },
+  links: [
+    { id: 'lancaster-preston', from: 'lancaster', to: 'preston', canal: true, rail: true },
+    { id: 'lancaster-barrow', from: 'lancaster', to: 'barrow', canal: false, rail: true },
+    { id: 'lancaster-fleetwood', from: 'lancaster', to: 'fleetwood', canal: true, rail: false },
+    { id: 'fleetwood-preston', from: 'fleetwood', to: 'preston', canal: true, rail: true },
+    { id: 'preston-blackburn', from: 'preston', to: 'blackburn', canal: true, rail: true },
+    { id: 'preston-wigan', from: 'preston', to: 'wigan', canal: true, rail: true },
+    { id: 'blackburn-burnley', from: 'blackburn', to: 'burnley', canal: true, rail: true },
+    { id: 'blackburn-bolton', from: 'blackburn', to: 'bolton', canal: false, rail: true },
+    { id: 'burnley-colne', from: 'burnley', to: 'colne', canal: true, rail: true },
+    { id: 'wigan-bolton', from: 'wigan', to: 'bolton', canal: true, rail: true },
+    { id: 'wigan-liverpool', from: 'wigan', to: 'liverpool', canal: true, rail: true },
+    { id: 'bolton-bury', from: 'bolton', to: 'bury', canal: true, rail: true },
+    { id: 'bolton-manchester', from: 'bolton', to: 'manchester', canal: true, rail: true },
+    { id: 'bury-manchester', from: 'bury', to: 'manchester', canal: true, rail: true },
+    { id: 'bury-rochdale', from: 'bury', to: 'rochdale', canal: false, rail: true },
+    { id: 'rochdale-oldham', from: 'rochdale', to: 'oldham', canal: true, rail: true },
+    { id: 'oldham-manchester', from: 'oldham', to: 'manchester', canal: true, rail: true },
+    { id: 'manchester-stockport', from: 'manchester', to: 'stockport', canal: true, rail: true },
+    { id: 'manchester-warrington', from: 'manchester', to: 'warrington', canal: true, rail: true },
+    { id: 'liverpool-warrington', from: 'liverpool', to: 'warrington', canal: true, rail: true },
+    { id: 'liverpool-birkenhead', from: 'liverpool', to: 'birkenhead', canal: false, rail: true },
+    { id: 'warrington-northwich', from: 'warrington', to: 'northwich', canal: true, rail: true },
+    { id: 'northwich-ellesmerePort', from: 'northwich', to: 'ellesmerePort', canal: true, rail: true },
+    { id: 'ellesmerePort-liverpool', from: 'ellesmerePort', to: 'liverpool', canal: true, rail: true },
+    { id: 'stockport-warrington', from: 'stockport', to: 'warrington', canal: false, rail: true }
+  ],
+  playerColors: ['#e74c3c', '#3498db', '#2ecc71', '#f39c12'],
+  industryIcons: {
+    cottonMill: 'M',
+    coalMine: 'C',
+    ironWorks: 'I',
+    port: 'P',
+    shipyard: 'S'
+  },
+  industryColors: {
+    cottonMill: '#f8f8f8',
+    coalMine: '#555',
+    ironWorks: '#d4740e',
+    port: '#2196F3',
+    shipyard: '#9C27B0'
+  }
+};

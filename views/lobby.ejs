@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brass: Lancashire - Lobby</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/lobby" class="nav-brand">Brass: Lancashire</a>
+    <div class="nav-links">
+      <a href="/wiki" class="nav-link">Wiki</a>
+      <span class="nav-user"><%= user.username %></span>
+      <form method="POST" action="/logout" style="display:inline">
+        <button type="submit" class="btn btn-sm">Logout</button>
+      </form>
+    </div>
+  </nav>
+  <main class="container">
+    <h2>Game Lobby</h2>
+
+    <div class="lobby-create">
+      <h3>Create New Game</h3>
+      <form method="POST" action="/games/create" class="create-form">
+        <div class="form-group">
+          <label>Game Name</label>
+          <input type="text" name="name" placeholder="My Game" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Players</label>
+            <select name="numPlayers">
+              <option value="3">3 Players</option>
+              <option value="4" selected>4 Players</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>AI Bots</label>
+            <select name="numBots">
+              <option value="0">No bots</option>
+              <option value="1">1 bot</option>
+              <option value="2">2 bots</option>
+              <option value="3">3 bots</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Game</button>
+      </form>
+    </div>
+
+    <div class="lobby-games">
+      <h3>Games</h3>
+      <% if (games.length === 0) { %>
+        <p class="muted">No games yet. Create one!</p>
+      <% } %>
+      <% for (const game of games) { %>
+        <div class="game-card">
+          <div class="game-info">
+            <strong><%= game.name %></strong>
+            <span class="badge badge-<%= game.status %>"><%= game.status %></span>
+            <span class="muted"><%= game.player_count %>/<%= game.num_players %> players</span>
+            <span class="muted">by <%= game.creator_name %></span>
+          </div>
+          <div class="game-actions">
+            <% if (game.status === 'active' && game.is_member) { %>
+              <a href="/games/<%= game.id %>" class="btn btn-primary">Play</a>
+            <% } else if (game.status === 'active') { %>
+              <a href="/games/<%= game.id %>" class="btn">Watch</a>
+            <% } else if (game.status === 'waiting' && !game.is_member) { %>
+              <form method="POST" action="/games/<%= game.id %>/join" style="display:inline">
+                <button type="submit" class="btn btn-primary">Join</button>
+              </form>
+            <% } else if (game.status === 'waiting' && game.is_member) { %>
+              <% if (game.created_by === user.id && game.player_count >= 3) { %>
+                <form method="POST" action="/games/<%= game.id %>/start" style="display:inline">
+                  <button type="submit" class="btn btn-primary">Start Game</button>
+                </form>
+              <% } else { %>
+                <span class="muted">Waiting for players...</span>
+              <% } %>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </main>
+</body>
+</html>

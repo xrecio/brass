@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brass: Lancashire - Wiki</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/lobby" class="nav-brand">Brass: Lancashire</a>
+    <div class="nav-links">
+      <a href="/wiki" class="nav-link" style="font-weight:bold">Wiki</a>
+      <% if (user) { %>
+        <span class="nav-user"><%= user.username %></span>
+      <% } %>
+    </div>
+  </nav>
+  <div class="wiki-container">
+    <h1>Brass: Lancashire Wiki</h1>
+    <div class="wiki-nav">
+      <a href="/wiki/rules">Game Rules</a>
+      <a href="/wiki/actions">Actions Guide</a>
+      <a href="/wiki/industries">Industries</a>
+      <a href="/wiki/strategy">Strategy Tips</a>
+    </div>
+
+    <h2>Welcome</h2>
+    <p>Brass: Lancashire is an economic strategy game about building industry in 18th century Lancashire during the Industrial Revolution. The game is played over two eras (Canal and Rail), where players build industries, establish trade links, and compete for victory points.</p>
+
+    <h2>Quick Start</h2>
+    <ol>
+      <li><strong>Register</strong> an account and create or join a game in the lobby.</li>
+      <li>Each game has 3-4 players (human or AI bots).</li>
+      <li>Each turn you perform 2 actions (1 on the very first turn) by playing cards from your hand.</li>
+      <li>Build industries, establish links, sell cotton, take loans, or develop your tech.</li>
+      <li>Score VP from flipped industries, links, and money at the end of each era.</li>
+      <li>Highest VP after the Rail Era wins!</li>
+    </ol>
+
+    <h2>Game Goal</h2>
+    <p>Get the most victory points by:</p>
+    <ul>
+      <li>Building industry tiles and flipping them (using them)</li>
+      <li>Building links between locations (canals or rails)</li>
+      <li>Having money at end of game (1 VP per £10)</li>
+    </ul>
+  </div>
+</body>
+</html>

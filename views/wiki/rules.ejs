@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brass: Lancashire - Rules</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/lobby" class="nav-brand">Brass: Lancashire</a>
+    <div class="nav-links"><a href="/wiki" class="nav-link">Wiki</a></div>
+  </nav>
+  <div class="wiki-container">
+    <div class="wiki-nav">
+      <a href="/wiki/rules">Rules</a>
+      <a href="/wiki/actions">Actions</a>
+      <a href="/wiki/industries">Industries</a>
+      <a href="/wiki/strategy">Strategy</a>
+    </div>
+
+    <h1>Game Rules</h1>
+
+    <h2>Game Structure</h2>
+    <p>The game is played over two eras: <strong>Canal Era</strong> then <strong>Rail Era</strong>.</p>
+
+    <h3>Setup</h3>
+    <ul>
+      <li>Each player draws 8 cards and starts with £30.</li>
+      <li>Income marker starts at level 10 (£0 income).</li>
+      <li>Turn order is randomized.</li>
+      <li>Some cards are removed from the deck (varies by player count).</li>
+    </ul>
+
+    <h3>Turn Structure</h3>
+    <ol>
+      <li><strong>Collect Income</strong> - Each player receives money based on their income level.</li>
+      <li><strong>Perform Actions</strong> - Each player takes 2 actions in turn order (first turn of Canal era = 1 action only). Each action requires discarding a card.</li>
+      <li><strong>Reorder</strong> - Players are reordered by amount spent (lowest first). Ties keep previous order.</li>
+      <li><strong>Refill Hands</strong> - Draw cards back up to 8 (if possible).</li>
+    </ol>
+
+    <h3>Canal Era End</h3>
+    <p>When the draw deck and all hands are empty:</p>
+    <ul>
+      <li>Score VP for flipped industry tiles.</li>
+      <li>Score VP for canals (count gold circles in connected locations).</li>
+      <li>Remove all canals and Level 1 tiles from the board.</li>
+      <li>Reset markets and deal new cards for Rail Era.</li>
+    </ul>
+
+    <h3>Rail Era End</h3>
+    <p>Same scoring as Canal Era, plus 1 VP per £10 held. Highest total VP wins.</p>
+    <p><strong>Tie Break:</strong> Income level, then money, then turn order.</p>
+
+    <h2>Key Mechanisms</h2>
+
+    <h3>Flipping Industry Tiles</h3>
+    <ul>
+      <li><strong>Cotton Mills and Ports:</strong> Flip during a "Sell Cotton" action.</li>
+      <li><strong>Coal Mines and Iron Works:</strong> Flip when all resource cubes are removed.</li>
+      <li><strong>Shipyards:</strong> Flip immediately when built.</li>
+    </ul>
+    <p>When a tile flips, immediately move your income marker up.</p>
+
+    <h3>Consuming Iron</h3>
+    <ol>
+      <li>If any iron on tiles anywhere on the board, take for free (flips tile if emptied).</li>
+      <li>If no iron on tiles, buy from external market (price varies by supply).</li>
+      <li>If external market empty, buy from bank at £5 each.</li>
+    </ol>
+
+    <h3>Consuming Coal</h3>
+    <p>Coal must be <strong>transported</strong> to the building site via connected links.</p>
+    <ol>
+      <li>If connected to a coal mine tile, take for free (closest first).</li>
+      <li>If not connected to coal but connected to any port, buy from external market.</li>
+      <li>If not connected to coal or any port, cannot consume coal.</li>
+    </ol>
+
+    <h3>Personal Networks</h3>
+    <p>A location is in your personal network if you have an industry tile there or a link connected to it.</p>
+    <ul>
+      <li>You may only build new links that touch your personal networks.</li>
+      <li>Industry cards may only be used to build in your personal network locations.</li>
+    </ul>
+    <p>For transport and selling, <strong>any player's links</strong> can be used.</p>
+
+    <h2>Important Exceptions</h2>
+    <ul>
+      <li>First turn of Canal era: only 1 action.</li>
+      <li>Canal era: one industry per location per player.</li>
+      <li>Rail era: cannot build Level 1 industries (must develop through them).</li>
+      <li>Rail era: cannot take loans after draw deck is exhausted.</li>
+      <li>Shipyard Level 0 cannot be built (must develop through).</li>
+      <li>Shipyard Level 1 is Canal era only; Level 2 is Rail era only.</li>
+      <li>You can overbuild your own industries with higher tech.</li>
+      <li>You can overbuild opponent's coal/iron only if that external market is empty.</li>
+      <li>If you have no tiles on the board, an industry card lets you build anywhere.</li>
+    </ul>
+  </div>
+</body>
+</html>

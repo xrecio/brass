@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: brass-lancashire
+    runtime: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /data/db.json
+      - key: SESSION_DIR
+        value: /data/sessions
+    disk:
+      name: brass-data
+      mountPath: /data
+      sizeGB: 1
