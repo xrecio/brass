@@ -127,17 +127,34 @@ a:hover { text-decoration: underline; }
 .game-container { display: flex; flex-direction: column; height: calc(100vh - 45px); }
 .game-main { display: flex; flex: 1; overflow: hidden; position: relative; }
 
-/* Left panel: players + info + markets */
+/* Left panel: game info + players (collapsible) */
 .left-panel {
-  width: 200px;
+  display: flex;
+  background: var(--bg-light);
+  border-right: 1px solid #333;
+}
+.left-panel-toggle {
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 10px;
+  background: #1a1a2a;
+  user-select: none;
+}
+.left-panel-toggle:hover { background: var(--surface); }
+.left-panel-content {
+  width: 195px;
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding: 6px;
   overflow-y: auto;
-  background: var(--bg-light);
-  border-right: 1px solid #333;
+  transition: width 0.2s ease;
 }
+.left-panel.collapsed .left-panel-content { width: 0; padding: 0; overflow: hidden; }
 .left-panel h4 { color: var(--gold); font-size: 11px; margin-bottom: 3px; }
 
 .player-bar { display: flex; flex-direction: column; gap: 4px; }
@@ -158,6 +175,11 @@ a:hover { text-decoration: underline; }
 }
 .money-disc.silver { background: #C0C0C0; color: #333; border: 1px solid #999; }
 .money-disc.bronze { background: #CD7F32; color: #fff; border: 1px solid #8B5A2B; }
+.player-stats-grid {
+  display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+  font-size: 9px; color: var(--text-muted); margin: 2px 0;
+}
+.pstat { display: inline-flex; align-items: center; gap: 1px; }
 .player-stats {
   display: flex; flex-wrap: wrap; gap: 6px;
   font-size: 10px; color: var(--text-muted); margin-top: 1px;
@@ -281,25 +303,28 @@ a:hover { text-decoration: underline; }
 .loan-buttons, .develop-options, .industry-options { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
 
 /* Hand */
-.hand-cards { display: flex; flex-wrap: wrap; gap: 3px; }
+.hand-cards { display: flex; gap: 3px; }
 .card {
-  padding: 3px 4px;
-  border-radius: 4px;
+  width: 52px;
+  min-height: 72px;
+  padding: 6px 4px;
+  border-radius: 5px;
   border: 2px solid #555;
   cursor: pointer;
   text-align: center;
   transition: all 0.15s;
-}
-.card.card-big {
-  width: 68px;
-  padding: 6px 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
 }
 .card:hover { border-color: var(--gold); background: var(--surface-light); }
 .card.selected { border-color: var(--gold); background: var(--surface-light); box-shadow: 0 0 8px var(--gold); }
 .card.location { background: #2a3a2a; }
 .card.industry { background: #3a2a2a; }
 .card-type { font-size: 8px; color: var(--text-muted); text-transform: uppercase; }
-.card-label { font-size: 10px; font-weight: bold; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card-label { font-size: 10px; font-weight: bold; margin-top: 4px; word-break: break-word; line-height: 1.2; }
 
 /* Floating hand */
 .floating-hand {
@@ -316,8 +341,9 @@ a:hover { text-decoration: underline; }
   max-width: 90vw;
   resize: both;
   overflow: auto;
-  min-width: 200px;
+  min-width: 140px;
   min-height: 60px;
+  width: auto;
 }
 .floating-hand-header { cursor: move; }
 .floating-hand-header {

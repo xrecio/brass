@@ -34,10 +34,19 @@ const GameUI = {
     document.addEventListener('mouseup', () => { dragging = false; });
   },
 
+  leftPanelCollapsed: false,
+
+  toggleLeftPanel() {
+    this.leftPanelCollapsed = !this.leftPanelCollapsed;
+    const panel = document.getElementById('left-panel');
+    const arrow = document.getElementById('left-panel-arrow');
+    panel.classList.toggle('collapsed');
+    arrow.innerHTML = this.leftPanelCollapsed ? '&#9654;' : '&#9664;';
+  },
+
   updateAll() {
-    this.updatePlayerBar();
     this.updateGameInfo();
-    this.updateMarkets();
+    this.updatePlayerBar();
     this.updateActionPanel();
     this.updateHand();
     this.updateMat();
@@ -82,25 +91,25 @@ const GameUI = {
     bar.innerHTML = state.players.map(p => {
       const isCurrent = p.seat === currentSeat && state.phase === 'actions';
       const isMe = p.userId === USER_ID;
+      const cardCount = (p.hand && p.hand.length > 0) ? p.hand.length : (p.handCount || 0);
       const fives = Math.floor(p.money / 5);
       const ones = p.money % 5;
       const moneyDiscs = (fives > 6
         ? '<span class="money-disc silver">' + fives + '</span>'
         : Array(fives).fill('<span class="money-disc silver">5</span>').join(''))
         + Array(ones).fill('<span class="money-disc bronze">1</span>').join('');
-      return `
-        <div class="player-info ${isCurrent ? 'current' : ''} ${isMe ? 'me' : ''}"
-             style="border-color: ${BOARD.playerColors[p.seat]}">
-          <div class="player-name" style="color: ${BOARD.playerColors[p.seat]}">
-            ${p.username}${p.isBot ? ' (Bot)' : ''}
-            ${isCurrent ? ' ▸' : ''}
-          </div>
-          <div class="money-discs" title="£${p.money}">${moneyDiscs}</div>
-          <div class="player-stats">
-            <span title="Cards">${p.hand ? p.hand.length : p.handCount || 0} cards</span>
-          </div>
-        </div>
-      `;
+      return '<div class="player-info ' + (isCurrent ? 'current' : '') + ' ' + (isMe ? 'me' : '') + '"'
+        + ' style="border-color: ' + BOARD.playerColors[p.seat] + '">'
+        + '<div class="player-name" style="color: ' + BOARD.playerColors[p.seat] + '">'
+        + p.username + (p.isBot ? ' (Bot)' : '') + (isCurrent ? ' ▸' : '')
+        + '</div>'
+        + '<div class="player-stats-grid">'
+        + '<span class="pstat"><span class="tile-vp-hex tile-vp-inline">' + p.vp + '</span></span>'
+        + '<span class="pstat" title="Income level">Inc ' + p.income + '</span>'
+        + '<span class="pstat" title="Cards">' + cardCount + ' cards</span>'
+        + '</div>'
+        + '<div class="money-discs" title="£' + p.money + '">' + moneyDiscs + '</div>'
+        + '</div>';
     }).join('');
   },
 
@@ -114,51 +123,18 @@ const GameUI = {
 
     if (s.phase === 'finished') {
       const winner = s.players.reduce((best, p) => p.vp > best.vp ? p : best, s.players[0]);
-      panel.innerHTML = `
-        <h3>Game Over!</h3>
-        <p>Winner: <strong>${winner.username}</strong> with ${winner.vp} VP</p>
-      `;
+      panel.innerHTML = '<div class="info-row" style="color:var(--gold);font-weight:bold">Game Over!</div>'
+        + '<div class="info-row">Winner: <strong>' + winner.username + '</strong> ' + winner.vp + ' VP</div>';
       return;
     }
 
-    panel.innerHTML = `
-      <div class="info-row"><strong>Era:</strong> ${s.era === 'canal' ? 'Canal' : 'Rail'}</div>
-      <div class="info-row"><strong>Round:</strong> ${s.round}</div>
-      <div class="info-row"><strong>Turn:</strong> ${currentPlayer.username} (${s.actionsRemaining} actions left)</div>
-      <div class="info-row"><strong>Deck:</strong> ${s.drawPile.length} cards</div>
-    `;
+    panel.innerHTML = ''
+      + '<div class="info-row"><strong>' + (s.era === 'canal' ? 'Canal' : 'Rail') + '</strong> Era — Round ' + s.round + '</div>'
+      + '<div class="info-row" style="color:' + BOARD.playerColors[currentSeat] + '">' + currentPlayer.username + ' (' + s.actionsRemaining + ' action' + (s.actionsRemaining > 1 ? 's' : '') + ')</div>'
+      + '<div class="info-row">Deck: ' + s.drawPile.length + ' cards</div>';
   },
 
   // ============ MARKETS ============
-
-  updateMarkets() {
-    const panel = document.getElementById('market-panel');
-    const s = gameState;
-    const slotPrices = [1, 1, 2, 2, 3, 3, 4, 4];
-    const coalPrice = s.coalMarket > 0 ? slotPrices[s.coalMarket - 1] : 5;
-    const ironPrice = s.ironMarket > 0 ? slotPrices[s.ironMarket - 1] : 5;
-    const tilesLeft = s.distantMarketTiles ? s.distantMarketTiles.length : 0;
-    const flipped = s.distantMarketFlipped || [];
-    panel.innerHTML = `
-      <h4>Markets</h4>
-      <div class="market-row">
-        <span>Coal: ${s.coalMarket}/8</span>
-        <span class="market-price">£${coalPrice}/cube</span>
-      </div>
-      <div class="market-bar"><div class="market-fill coal" style="width:${s.coalMarket/8*100}%"></div></div>
-      <div class="market-row">
-        <span>Iron: ${s.ironMarket}/8</span>
-        <span class="market-price">£${ironPrice}/cube</span>
-      </div>
-      <div class="market-bar"><div class="market-fill iron" style="width:${s.ironMarket/8*100}%"></div></div>
-      <div class="market-row">
-        <span>Demand: ${s.distantMarketDemand}/8</span>
-        <span class="market-price">${tilesLeft} tiles</span>
-      </div>
-      <div class="market-bar"><div class="market-fill demand" style="width:${s.distantMarketDemand/8*100}%"></div></div>
-      ${flipped.length > 0 ? `<div class="market-detail"><span class="muted">Flipped: ${flipped.map(t => t === 0 ? '0' : t).join(', ')}</span></div>` : ''}
-    `;
-  },
 
   // ============ ACTION PANEL ============
 
@@ -708,7 +684,7 @@ const GameUI = {
       ? (BOARD.locations[info.location]?.name || info.location)
       : (INDUSTRIES[info.industry]?.name || info.industry);
     const isSelected = this.selectedCard === cardId;
-    return '<div class="card card-big ' + info.type + (isSelected ? ' selected' : '') + '"'
+    return '<div class="card ' + info.type + (isSelected ? ' selected' : '') + '"'
       + ' onclick="GameUI.selectCard(\'' + cardId + '\')"'
       + ' onmouseenter="GameUI.onCardHover(\'' + cardId + '\', event)"'
       + ' onmouseleave="GameUI.onCardLeave()">'

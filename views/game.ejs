@@ -18,11 +18,13 @@
 
   <div class="game-container">
     <div class="game-main">
-      <!-- Left panel: players + info + markets -->
+      <!-- Left panel: game info + players (collapsible) -->
       <div class="left-panel" id="left-panel">
-        <div id="player-bar"></div>
-        <div class="panel-section" id="game-info"></div>
-        <div class="panel-section" id="market-panel"></div>
+        <div class="left-panel-toggle" onclick="GameUI.toggleLeftPanel()"><span id="left-panel-arrow">&#9664;</span></div>
+        <div class="left-panel-content" id="left-panel-content">
+          <div class="panel-section" id="game-info"></div>
+          <div id="player-bar"></div>
+        </div>
       </div>
 
       <!-- Board -->
@@ -60,8 +62,8 @@
     </div>
 
     <!-- Collapsible log -->
-    <div class="log-wrapper" id="log-wrapper">
-      <div class="log-toggle" onclick="GameUI.toggleLog()">Game Log <span id="log-arrow">&#9660;</span></div>
+    <div class="log-wrapper collapsed" id="log-wrapper">
+      <div class="log-toggle" onclick="GameUI.toggleLog()">Game Log <span id="log-arrow">&#9650;</span></div>
       <div class="log-panel" id="log-panel"></div>
     </div>
   </div>
