@@ -86,6 +86,12 @@ const BoardRenderer = {
   },
 
   minimalMode: false,
+  hideNames: false,
+
+  toggleHideNames(checked) {
+    this.hideNames = checked;
+    this.render();
+  },
 
   toggleMinimal(checked) {
     this.minimalMode = checked;
@@ -743,15 +749,17 @@ const BoardRenderer = {
       rect.addEventListener('mousedown', (e) => this.onDragStart(e, locId, 'location'));
 
       // Location name inside the rectangle
-      this.createAndAppend('text', {
-        x: loc.x, y: ry + nameHeight,
-        'text-anchor': 'middle',
-        'font-size': '6.5',
-        'font-family': 'sans-serif',
-        fill: '#332211',
-        'font-weight': 'bold',
-        'pointer-events': 'none'
-      }).textContent = loc.name;
+      if (!this.hideNames) {
+        this.createAndAppend('text', {
+          x: loc.x, y: ry + nameHeight,
+          'text-anchor': 'middle',
+          'font-size': '6.5',
+          'font-family': 'sans-serif',
+          fill: '#332211',
+          'font-weight': 'bold',
+          'pointer-events': 'none'
+        }).textContent = loc.name;
+      }
 
       // Draw slots in grid (max 2 per row)
       const slotsStartY = ry + nameHeight + padY;
@@ -813,7 +821,7 @@ const BoardRenderer = {
       const isDual = allowed.length > 1;
       const dimColors = {
         cottonMill: '#8b7a5544', // dim wool/beige
-        coalMine:   '#55555544', // dim grey
+        coalMine:   '#33333366', // dim dark grey
         ironWorks:  '#d4740e44', // dim orange
         port:       '#2196F344', // dim blue
         shipyard:   '#6d432a44'  // dim brown

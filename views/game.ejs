@@ -25,6 +25,13 @@
         <div class="left-panel-content" id="left-panel-content">
           <div class="panel-section" id="game-info"></div>
           <div id="player-bar"></div>
+          <div class="panel-section legend-panel">
+            <div class="legend-row"><span class="legend-swatch" style="background:#8b7a55"></span> <strong>M</strong> Cotton Mill</div>
+            <div class="legend-row"><span class="legend-swatch" style="background:#333"></span> <strong>C</strong> Coal Mine</div>
+            <div class="legend-row"><span class="legend-swatch" style="background:#d4740e"></span> <strong>I</strong> Iron Works</div>
+            <div class="legend-row"><span class="legend-swatch" style="background:#2196F3"></span> <strong>P</strong> Port</div>
+            <div class="legend-row"><span class="legend-swatch" style="background:#6d432a"></span> <strong>S</strong> Shipyard</div>
+          </div>
         </div>
       </div>
 
@@ -34,6 +41,7 @@
           <label>Map <input type="range" id="map-dim-slider" min="0" max="100" value="70"
                  oninput="BoardRenderer.setMapOpacity(this.value)"></label>
           <label class="board-control-check"><input type="checkbox" id="minimal-toggle" onchange="BoardRenderer.toggleMinimal(this.checked)"> Minimal</label>
+          <label class="board-control-check"><input type="checkbox" id="hide-names-toggle" onchange="BoardRenderer.toggleHideNames(this.checked)"> No names</label>
           <span class="board-control-sep">|</span>
           <button class="btn btn-sm board-edit-btn" id="toggle-links-btn" onclick="BoardRenderer.toggleLinks()">Links</button>
           <span class="board-control-sep">|</span>

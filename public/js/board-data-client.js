@@ -69,8 +69,8 @@ const BOARD = {
 
   playerColors: ['#e74c3c', '#9b59b6', '#2ecc71', '#f39c12'],
   industryIcons: {
-    cottonMill: 'C',
-    coalMine: 'Co',
+    cottonMill: 'M',
+    coalMine: 'C',
     ironWorks: 'I',
     port: 'P',
     shipyard: 'S'
