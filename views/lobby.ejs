@@ -20,88 +20,108 @@
     </div>
   </nav>
   <main class="container">
-    <h2>Game Lobby</h2>
+    <div style="display:flex;gap:24px;align-items:flex-start">
+      <div style="flex:1">
+        <h2>My Games</h2>
 
-    <div class="lobby-quick">
-      <form method="POST" action="/games/quick" style="display:inline">
-        <input type="hidden" name="numBots" value="2">
-        <button type="submit" class="btn btn-primary">Quick Game (2 bots)</button>
-      </form>
-      <form method="POST" action="/games/quick" style="display:inline">
-        <input type="hidden" name="numBots" value="3">
-        <button type="submit" class="btn btn-primary">Quick Game (3 bots)</button>
-      </form>
+        <div class="lobby-quick">
+          <form method="POST" action="/games/quick" style="display:inline">
+            <input type="hidden" name="numBots" value="2">
+            <button type="submit" class="btn btn-primary">Quick Game (2 bots)</button>
+          </form>
+          <form method="POST" action="/games/quick" style="display:inline">
+            <input type="hidden" name="numBots" value="3">
+            <button type="submit" class="btn btn-primary">Quick Game (3 bots)</button>
+          </form>
+        </div>
+
+        <div class="lobby-create">
+          <h3>Create New Game</h3>
+          <form method="POST" action="/games/create" class="create-form">
+            <div class="form-group">
+              <label>Game Name</label>
+              <input type="text" name="name" placeholder="My Game" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Players</label>
+                <select name="numPlayers">
+                  <option value="3">3 Players</option>
+                  <option value="4" selected>4 Players</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>AI Bots</label>
+                <select name="numBots">
+                  <option value="0">No bots</option>
+                  <option value="1">1 bot</option>
+                  <option value="2">2 bots</option>
+                  <option value="3">3 bots</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Game</button>
+          </form>
+        </div>
+
+        <div class="lobby-games">
+          <% if (games.length === 0) { %>
+            <p class="muted">No active games. Start one!</p>
+          <% } %>
+          <% for (const game of games) { %>
+            <div class="game-card">
+              <div class="game-info">
+                <strong><%= game.name %></strong>
+                <span class="badge badge-<%= game.status %>"><%= game.status %></span>
+                <span class="muted"><%= game.player_count %>/<%= game.num_players %> players</span>
+                <span class="muted">by <%= game.creator_name %></span>
+                <% if (game.gameAppVersion) { %>
+                  <span class="badge badge-version<%= game.compatible ? '' : ' badge-incompatible' %>">v<%= game.gameAppVersion %></span>
+                <% } %>
+              </div>
+              <div class="game-actions">
+                <% if (!game.compatible && game.status === 'active') { %>
+                  <span class="muted" style="color: var(--accent)">Incompatible version</span>
+                <% } else if (game.status === 'active') { %>
+                  <a href="/games/<%= game.id %>" class="btn btn-primary">Play</a>
+                <% } else if (game.status === 'waiting') { %>
+                  <% if (game.created_by === user.id && game.player_count >= 3) { %>
+                    <form method="POST" action="/games/<%= game.id %>/start" style="display:inline">
+                      <button type="submit" class="btn btn-primary">Start Game</button>
+                    </form>
+                  <% } else { %>
+                    <span class="muted">Waiting for players...</span>
+                  <% } %>
+                <% } %>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div style="width:200px;flex-shrink:0">
+        <div class="panel-section" style="margin-bottom:12px">
+          <h4 style="color:var(--gold);margin-bottom:8px">System</h4>
+          <div class="info-row">Total games: <%= totalGames %></div>
+          <div class="info-row">Players: <%= totalPlayers %></div>
+        </div>
+
+        <% if (isAdmin) { %>
+        <div class="panel-section">
+          <h4 style="color:var(--gold);margin-bottom:8px">Admin: Create User</h4>
+          <form method="POST" action="/admin/create-user">
+            <div class="form-group">
+              <input type="text" name="username" placeholder="Username" required minlength="3" maxlength="20" style="width:100%">
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Create User</button>
+          </form>
+          <p class="muted" style="margin-top:6px;font-size:10px">User will set their password on first login.</p>
+        </div>
+        <% } %>
+      </div>
     </div>
 
-    <div class="lobby-create">
-      <h3>Create New Game</h3>
-      <form method="POST" action="/games/create" class="create-form">
-        <div class="form-group">
-          <label>Game Name</label>
-          <input type="text" name="name" placeholder="My Game" required>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Players</label>
-            <select name="numPlayers">
-              <option value="3">3 Players</option>
-              <option value="4" selected>4 Players</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>AI Bots</label>
-            <select name="numBots">
-              <option value="0">No bots</option>
-              <option value="1">1 bot</option>
-              <option value="2">2 bots</option>
-              <option value="3">3 bots</option>
-            </select>
-          </div>
-        </div>
-        <button type="submit" class="btn btn-primary">Create Game</button>
-      </form>
-    </div>
-
-    <div class="lobby-games">
-      <h3>Games</h3>
-      <% if (games.length === 0) { %>
-        <p class="muted">No games yet. Create one!</p>
-      <% } %>
-      <% for (const game of games) { %>
-        <div class="game-card">
-          <div class="game-info">
-            <strong><%= game.name %></strong>
-            <span class="badge badge-<%= game.status %>"><%= game.status %></span>
-            <span class="muted"><%= game.player_count %>/<%= game.num_players %> players</span>
-            <span class="muted">by <%= game.creator_name %></span>
-            <% if (game.gameAppVersion) { %>
-              <span class="badge badge-version<%= game.compatible ? '' : ' badge-incompatible' %>">v<%= game.gameAppVersion %></span>
-            <% } %>
-          </div>
-          <div class="game-actions">
-            <% if (!game.compatible && game.status === 'active') { %>
-              <span class="muted" style="color: var(--accent)">Incompatible version</span>
-            <% } else if (game.status === 'active' && game.is_member) { %>
-              <a href="/games/<%= game.id %>" class="btn btn-primary">Play</a>
-            <% } else if (game.status === 'active') { %>
-              <a href="/games/<%= game.id %>" class="btn">Watch</a>
-            <% } else if (game.status === 'waiting' && !game.is_member) { %>
-              <form method="POST" action="/games/<%= game.id %>/join" style="display:inline">
-                <button type="submit" class="btn btn-primary">Join</button>
-              </form>
-            <% } else if (game.status === 'waiting' && game.is_member) { %>
-              <% if (game.created_by === user.id && game.player_count >= 3) { %>
-                <form method="POST" action="/games/<%= game.id %>/start" style="display:inline">
-                  <button type="submit" class="btn btn-primary">Start Game</button>
-                </form>
-              <% } else { %>
-                <span class="muted">Waiting for players...</span>
-              <% } %>
-            <% } %>
-          </div>
-        </div>
-      <% } %>
-    </div>
     <p class="muted" style="margin-top: 24px; text-align: center">Brass: Lancashire v<%= appVersion %></p>
   </main>
 </body>

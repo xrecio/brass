@@ -9,9 +9,14 @@ const router = express.Router();
 router.get('/lobby', requireLogin, (req, res) => {
   const userId = req.session.user.id;
 
-  const allGames = db.findGames({}).filter(g => g.status === 'waiting' || g.status === 'active');
+  const allGames = db.findGames({});
+  const allUsers = db.get().users.filter(u => !u.is_bot);
 
-  const games = allGames.map(g => {
+  // Only show games where user is a member
+  const myGames = allGames.filter(g => {
+    if (g.status === 'finished') return false;
+    return db.isGameMember(g.id, userId);
+  }).map(g => {
     const players = db.getGamePlayers(g.id);
     const creator = db.findUserById(g.created_by);
     const gs = db.getGameState(g.id);
@@ -25,14 +30,19 @@ router.get('/lobby', requireLogin, (req, res) => {
     return {
       ...g,
       player_count: players.length,
-      is_member: players.some(p => p.user_id === userId),
+      is_member: true,
       creator_name: creator ? creator.username : 'Unknown',
       gameAppVersion,
       compatible
     };
   }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-  res.render('lobby', { games, appVersion: APP_VERSION });
+  // System stats
+  const totalGames = allGames.length;
+  const totalPlayers = allUsers.length;
+  const isAdmin = req.session.user.username === 'xai';
+
+  res.render('lobby', { games: myGames, appVersion: APP_VERSION, totalGames, totalPlayers, isAdmin });
 });
 
 router.post('/games/create', requireLogin, (req, res) => {
