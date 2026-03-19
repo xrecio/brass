@@ -646,11 +646,47 @@ const GameUI = {
 
   handCollapsed: false,
   handDetached: true, // floating by default
+  handSortMode: 'default',
   hoveredCard: null,
 
   toggleHand() {
     this.handCollapsed = !this.handCollapsed;
     this.updateHand();
+  },
+
+  sortHand(mode) {
+    this.handSortMode = mode;
+    this.updateHand();
+  },
+
+  getSortedHand(hand) {
+    if (!hand || this.handSortMode === 'default') return [...hand];
+    const sorted = [...hand];
+    const getInfo = (cardId) => {
+      const info = parseCardId(cardId);
+      const label = info.type === 'location'
+        ? (BOARD.locations[info.location]?.name || info.location)
+        : (INDUSTRIES[info.industry]?.name || info.industry);
+      return { ...info, label };
+    };
+    if (this.handSortMode === 'type') {
+      sorted.sort((a, b) => {
+        const ai = getInfo(a), bi = getInfo(b);
+        return ai.type.localeCompare(bi.type);
+      });
+    } else if (this.handSortMode === 'alpha') {
+      sorted.sort((a, b) => {
+        const ai = getInfo(a), bi = getInfo(b);
+        return ai.label.localeCompare(bi.label);
+      });
+    } else if (this.handSortMode === 'typeAlpha') {
+      sorted.sort((a, b) => {
+        const ai = getInfo(a), bi = getInfo(b);
+        const tc = ai.type.localeCompare(bi.type);
+        return tc !== 0 ? tc : ai.label.localeCompare(bi.label);
+      });
+    }
+    return sorted;
   },
 
   toggleDetachHand() {
@@ -831,7 +867,8 @@ const GameUI = {
     // cardsHTML no longer used directly; built per context below
 
     const floatCheck = '<label class="float-check" onclick="event.stopPropagation()"><input type="checkbox" ' + (this.handDetached ? 'checked' : '') + ' onchange="GameUI.toggleDetachHand()"> Float</label>';
-    const cardsHTML = myPlayer.hand.map(c => this.renderCardHTML(c)).join('');
+    const sortedHand = this.getSortedHand(myPlayer.hand);
+    const cardsHTML = sortedHand.map(c => this.renderCardHTML(c)).join('');
 
     if (this.handDetached) {
       panel.innerHTML = '<h4 class="collapsible-header" onclick="GameUI.toggleHand()">Hand (' + myPlayer.hand.length + ') ' + floatCheck + '</h4>';

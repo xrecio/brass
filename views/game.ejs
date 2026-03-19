@@ -63,6 +63,12 @@
     <div class="floating-hand" id="floating-hand">
       <div class="floating-hand-header">
         <span>Hand</span>
+        <div class="hand-sort-btns">
+          <button class="btn btn-sm" onclick="GameUI.sortHand('default')" title="Original order">&#8645;</button>
+          <button class="btn btn-sm" onclick="GameUI.sortHand('type')" title="By type (LOC/IND)">T</button>
+          <button class="btn btn-sm" onclick="GameUI.sortHand('alpha')" title="Alphabetical">Az</button>
+          <button class="btn btn-sm" onclick="GameUI.sortHand('typeAlpha')" title="Type then alphabetical">T+Az</button>
+        </div>
         <button class="btn btn-sm" onclick="GameUI.toggleDetachHand()">Dock</button>
       </div>
       <div class="floating-hand-cards" id="floating-hand-cards"></div>

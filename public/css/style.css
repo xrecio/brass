@@ -355,6 +355,8 @@ a:hover { text-decoration: underline; }
   height: 110px;
 }
 .floating-hand-header { cursor: move; }
+.hand-sort-btns { display: flex; gap: 2px; }
+.hand-sort-btns .btn { font-size: 8px !important; padding: 1px 4px !important; min-width: 18px; }
 .float-check {
   display: inline-flex; align-items: center; gap: 3px;
   font-size: 8px; color: var(--text-muted); cursor: pointer; margin-left: 6px;
