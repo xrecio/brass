@@ -138,16 +138,20 @@ const GameUI = {
     let dragging = false, ox = 0, oy = 0;
     header.addEventListener('mousedown', (e) => {
       dragging = true;
-      ox = e.clientX - el.offsetLeft;
-      oy = e.clientY - el.offsetTop;
+      const rect = el.getBoundingClientRect();
+      ox = e.clientX - rect.left;
+      oy = e.clientY - rect.top;
+      // Convert to absolute positioning on first drag
+      el.style.left = rect.left + 'px';
+      el.style.top = rect.top + 'px';
+      el.style.bottom = 'auto';
+      el.style.transform = 'none';
       e.preventDefault();
     });
     document.addEventListener('mousemove', (e) => {
       if (!dragging) return;
       el.style.left = (e.clientX - ox) + 'px';
       el.style.top = (e.clientY - oy) + 'px';
-      el.style.bottom = 'auto';
-      el.style.transform = 'none';
     });
     document.addEventListener('mouseup', () => { dragging = false; });
   },
