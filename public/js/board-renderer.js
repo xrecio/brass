@@ -534,7 +534,7 @@ const BoardRenderer = {
     const numPlayers = state.players.length;
     const colW = 28;
     const panelW = numPlayers * colW + 4;
-    const panelH = 36;
+    const panelH = 42;
 
     this.createPanelBg('vpPanel', pos.x - 2, pos.y - 6, panelW, panelH);
 
@@ -548,24 +548,25 @@ const BoardRenderer = {
     for (let i = 0; i < state.players.length; i++) {
       const p = state.players[i];
       const cx = pos.x + i * colW + colW/2;
+      const pColor = BOARD.playerColors[p.seat];
 
       // VP hexagon
-      const hcy = pos.y + 13;
-      const hr = 9; // hexagon radius
+      const hcy = pos.y + 18;
+      const hr = 9;
       const hexPoints = [0,1,2,3,4,5].map(n => {
         const angle = Math.PI / 180 * (60 * n - 90);
         return (cx + hr * Math.cos(angle)).toFixed(1) + ',' + (hcy + hr * Math.sin(angle)).toFixed(1);
       }).join(' ');
-      const vpFill = this.minimalMode ? 'none' : BOARD.playerColors[p.seat];
       this.createAndAppend('polygon', {
         points: hexPoints,
-        fill: vpFill, stroke: '#cc3366',
+        fill: this.minimalMode ? 'none' : pColor,
+        stroke: pColor,
         'stroke-width': this.minimalMode ? 1.5 : 1
       });
       this.createAndAppend('text', {
         x: cx, y: hcy,
         'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': '7',
-        fill: this.minimalMode ? BOARD.playerColors[p.seat] : '#fff',
+        fill: this.minimalMode ? pColor : '#fff',
         'font-weight': 'bold', 'pointer-events': 'none'
       }).textContent = p.vp;
       // Name below
