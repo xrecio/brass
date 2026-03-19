@@ -369,12 +369,11 @@ a:hover { text-decoration: underline; }
   align-items: stretch;
 }
 .floating-hand-cards .card {
-  /* All cards identical: height from container, width from ratio */
+  /* All cards identical size: height from container, width = height / 1.618 */
   height: 100%;
-  width: 0; /* let aspect-ratio determine it, not content */
-  min-width: 0 !important;
-  aspect-ratio: 1 / 1.618;
+  width: auto;
   flex: 0 0 auto;
+  aspect-ratio: auto; /* disable — we use JS to set width */
   overflow: hidden;
   padding: 2px;
 }

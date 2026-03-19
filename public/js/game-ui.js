@@ -11,6 +11,32 @@ const GameUI = {
     this.updateAll();
     this.startPolling();
     this.initFloatingHandDrag();
+    this.initFloatingHandResize();
+  },
+
+  sizeFloatingCards() {
+    const container = document.getElementById('floating-hand-cards');
+    if (!container) return;
+    const cards = container.querySelectorAll('.card');
+    if (cards.length === 0) return;
+    // Available height = container height
+    const h = container.clientHeight;
+    if (h <= 0) return;
+    // Width from golden ratio
+    const w = Math.round(h / 1.618);
+    cards.forEach(c => {
+      c.style.width = w + 'px';
+      c.style.height = h + 'px';
+      c.style.minWidth = w + 'px';
+      c.style.flex = '0 0 ' + w + 'px';
+    });
+  },
+
+  initFloatingHandResize() {
+    const el = document.getElementById('floating-hand');
+    if (!el || this._floatResizeObserver) return;
+    this._floatResizeObserver = new ResizeObserver(() => this.sizeFloatingCards());
+    this._floatResizeObserver.observe(el);
   },
 
   initFloatingHandDrag() {
@@ -712,6 +738,7 @@ const GameUI = {
     if (this.handDetached) {
       panel.innerHTML = '<h4 class="collapsible-header" onclick="GameUI.toggleHand()">Hand (' + myPlayer.hand.length + ') ' + floatCheck + '</h4>';
       if (floatCards) floatCards.innerHTML = cardsHTML;
+      requestAnimationFrame(() => this.sizeFloatingCards());
     } else {
       const arrow = this.handCollapsed ? '&#9654;' : '&#9660;';
       panel.innerHTML = '<h4 class="collapsible-header" onclick="GameUI.toggleHand()">'
