@@ -334,7 +334,7 @@ const BoardRenderer = {
         this.createAndAppend('rect', {
           x: pos.x - w/2 + 1, y: y - 7,
           width: w - 2, height: 14, rx: 2,
-          fill: '#e9456033', stroke: '#e94560', 'stroke-width': 0.8
+          fill: '#ffffff22', stroke: '#ffffff88', 'stroke-width': 0.8
         });
       }
 
