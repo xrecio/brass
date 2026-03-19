@@ -441,7 +441,7 @@ const BoardRenderer = {
     const numPlayers = state.players.length;
     const rowH = 14;
     const panelH = numPlayers * rowH + 20;
-    const panelW = 72;
+    const panelW = 85;
     const ordinals = ['1st', '2nd', '3rd', '4th'];
 
     this.createPanelBg('turnOrderPanel', pos.x - panelW/2, pos.y - 6, panelW, panelH);
@@ -489,7 +489,7 @@ const BoardRenderer = {
     this.beginScaledGroup('moneySpentPanel', pos.x, pos.y);
     const numPlayers = state.players.length;
     const rowH = 14;
-    const panelH = numPlayers * rowH + 16;
+    const panelH = numPlayers * rowH + 22;
     const panelW = 65;
 
     this.createPanelBg('moneySpentPanel', pos.x - panelW/2, pos.y - 6, panelW, panelH);
@@ -546,7 +546,7 @@ const BoardRenderer = {
     const numPlayers = state.players.length;
     const colW = 28;
     const panelW = numPlayers * colW + 4;
-    const panelH = 48;
+    const panelH = 52;
 
     this.createPanelBg('vpPanel', pos.x - 2, pos.y - 6, panelW, panelH);
 
@@ -684,7 +684,7 @@ const BoardRenderer = {
     }
 
     // Serpentine U-turn arrows at row ends
-    const r = 2; // curve radius
+    const r = 1.5; // curve radius
     for (let row = 0; row < rows - 1; row++) {
       const by1 = startY + row * (boxSize + gap) + boxSize / 2;
       const by2 = startY + (row + 1) * (boxSize + gap) + boxSize / 2;
@@ -695,7 +695,7 @@ const BoardRenderer = {
         const tx = pos.x + cols * (boxSize + gap) - gap + 2;
         this.createAndAppend('path', {
           d: 'M ' + tx + ' ' + by1 + ' C ' + (tx + r*2) + ' ' + by1 + ' ' + (tx + r*2) + ' ' + by2 + ' ' + tx + ' ' + by2,
-          fill: 'none', stroke: '#55555588', 'stroke-width': 0.6,
+          fill: 'none', stroke: '#55555588', 'stroke-width': 0.4,
           'marker-end': 'url(#arrowhead)', 'pointer-events': 'none'
         });
       } else {
@@ -703,7 +703,7 @@ const BoardRenderer = {
         const tx = pos.x - 2;
         this.createAndAppend('path', {
           d: 'M ' + tx + ' ' + by1 + ' C ' + (tx - r*2) + ' ' + by1 + ' ' + (tx - r*2) + ' ' + by2 + ' ' + tx + ' ' + by2,
-          fill: 'none', stroke: '#55555588', 'stroke-width': 0.6,
+          fill: 'none', stroke: '#55555588', 'stroke-width': 0.4,
           'marker-end': 'url(#arrowhead)', 'pointer-events': 'none'
         });
       }
@@ -712,7 +712,7 @@ const BoardRenderer = {
     // Define arrowhead marker (if not already)
     if (!this.svg.querySelector('#arrowhead')) {
       const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-      defs.innerHTML = '<marker id="arrowhead" markerWidth="3" markerHeight="2" refX="3" refY="1" orient="auto"><polygon points="0,0 3,1 0,2" fill="#55555588"/></marker>';
+      defs.innerHTML = '<marker id="arrowhead" markerWidth="2.5" markerHeight="1.5" refX="2.5" refY="0.75" orient="auto"><polygon points="0,0 2.5,0.75 0,1.5" fill="#55555588"/></marker>';
       this.svg.insertBefore(defs, this.svg.firstChild);
     }
 
