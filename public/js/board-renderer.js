@@ -790,9 +790,7 @@ const BoardRenderer = {
 
     if (slot.owner !== null) {
       // Filled slot
-      const fillColor = slot.flipped
-        ? BOARD.playerColors[slot.owner]
-        : BOARD.industryColors[slot.industryType] || '#ccc';
+      const fillColor = BOARD.playerColors[slot.owner];
 
       this.createAndAppend('rect', {
         x: cx - half, y: cy - half,
