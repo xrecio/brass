@@ -670,6 +670,39 @@ const BoardRenderer = {
         }).textContent = (incVal >= 0 ? '+' : '') + incVal;
       }
     }
+
+    // Serpentine arrows at row ends
+    const arrowSize = 2;
+    for (let row = 0; row < rows; row++) {
+      const by = startY + row * (boxSize + gap) + boxSize / 2;
+      const leftX = pos.x - arrowSize - 1;
+      const rightX = pos.x + cols * (boxSize + gap) - gap + 1;
+
+      if (row < rows - 1) {
+        if (row % 2 === 0) {
+          // Left-to-right row: right arrow then down arrow
+          this.createAndAppend('text', {
+            x: rightX, y: by, 'text-anchor': 'start', 'dominant-baseline': 'central',
+            'font-size': '4', fill: '#555', 'pointer-events': 'none'
+          }).textContent = '→';
+          this.createAndAppend('text', {
+            x: rightX, y: by + (boxSize + gap) / 2, 'text-anchor': 'start', 'dominant-baseline': 'central',
+            'font-size': '4', fill: '#555', 'pointer-events': 'none'
+          }).textContent = '↓';
+        } else {
+          // Right-to-left row: left arrow then down arrow
+          this.createAndAppend('text', {
+            x: leftX, y: by, 'text-anchor': 'end', 'dominant-baseline': 'central',
+            'font-size': '4', fill: '#555', 'pointer-events': 'none'
+          }).textContent = '←';
+          this.createAndAppend('text', {
+            x: leftX, y: by + (boxSize + gap) / 2, 'text-anchor': 'end', 'dominant-baseline': 'central',
+            'font-size': '4', fill: '#555', 'pointer-events': 'none'
+          }).textContent = '↓';
+        }
+      }
+    }
+
     this.endScaledGroup();
   },
 
