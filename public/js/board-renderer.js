@@ -690,8 +690,8 @@ const BoardRenderer = {
     // Serpentine U-turn arrows at row ends (start/end near row edges)
     const r = 1.2;
     for (let row = 0; row < rows - 1; row++) {
-      const by1 = startY + row * (boxSize + gap) + boxSize; // bottom of current row
-      const by2 = startY + (row + 1) * (boxSize + gap);     // top of next row
+      const by1 = startY + row * (boxSize + gap) + boxSize * 0.75; // between center and bottom
+      const by2 = startY + (row + 1) * (boxSize + gap) + boxSize * 0.25; // between top and center
 
       if (row % 2 === 0) {
         const tx = pos.x + cols * (boxSize + gap) - gap + 1;
