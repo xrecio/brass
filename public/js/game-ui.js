@@ -10,6 +10,28 @@ const GameUI = {
     BoardRenderer.init();
     this.updateAll();
     this.startPolling();
+    this.initFloatingHandDrag();
+  },
+
+  initFloatingHandDrag() {
+    const el = document.getElementById('floating-hand');
+    if (!el) return;
+    const header = el.querySelector('.floating-hand-header');
+    let dragging = false, ox = 0, oy = 0;
+    header.addEventListener('mousedown', (e) => {
+      dragging = true;
+      ox = e.clientX - el.offsetLeft;
+      oy = e.clientY - el.offsetTop;
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      el.style.left = (e.clientX - ox) + 'px';
+      el.style.top = (e.clientY - oy) + 'px';
+      el.style.bottom = 'auto';
+      el.style.transform = 'none';
+    });
+    document.addEventListener('mouseup', () => { dragging = false; });
   },
 
   updateAll() {
