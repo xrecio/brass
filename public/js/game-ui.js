@@ -674,6 +674,21 @@ const GameUI = {
     arrow.innerHTML = this.rightPanelCollapsed ? '&#9664;' : '&#9654;';
   },
 
+  renderTileBox(lv, status, topLevel, ind, showDetail) {
+    const ld = ind.levels[lv];
+    const cls = status === 'available' ? 'tile-avail' : status === 'onBoard' ? 'tile-board' : 'tile-used';
+    const isTop = status === 'available' && lv === topLevel;
+    const tooltip = ld ? '£' + ld.cost + (ld.coal ? ' +' + ld.coal + ' coal' : '') + (ld.iron ? ' +' + ld.iron + ' iron' : '') : '';
+    let html = '<span class="mat-tile-box ' + cls + (isTop ? ' tile-next' : '') + '" title="' + tooltip + '">';
+    html += '<span class="tile-num">' + lv + '</span>';
+    if (showDetail && ld) {
+      html += '<span class="tile-vp-hex">' + ld.vp + '</span>';
+      html += '<span class="tile-inc-circle">+' + ld.income + '</span>';
+    }
+    html += '</span>';
+    return html;
+  },
+
   updateMat() {
     const panel = document.getElementById('mat-panel');
     const myPlayer = gameState.players.find(p => p.userId === USER_ID);
@@ -681,49 +696,98 @@ const GameUI = {
 
     const arrow = this.matCollapsed ? '&#9654;' : '&#9660;';
     const showDetail = this.matDetailVisible;
-    panel.innerHTML = `
-      <h4 class="collapsible-header" onclick="GameUI.toggleMat()">
-        Industry Mat <span class="collapse-arrow">${arrow}</span>
-      </h4>
-      ${this.matCollapsed ? '' : `
-        <div style="text-align:right;margin-bottom:3px">
-          <span class="muted" style="font-size:9px;cursor:pointer" onclick="GameUI.toggleMatDetail()">${showDetail ? 'Hide' : 'Show'} detail</span>
-        </div>
-        <div class="mat-tiles">
-        ${Object.entries(myPlayer.industryMat).map(([type, levels]) => {
-          const ind = INDUSTRIES[type];
-          if (!ind) return '';
-          const topLevel = levels[0];
-          const tileData = topLevel !== undefined ? ind.levels[topLevel] : null;
-          // Group by level and count duplicates
-          const levelCounts = {};
-          for (const l of levels) { levelCounts[l] = (levelCounts[l] || 0) + 1; }
-          return `<div class="mat-group">
-            <div class="mat-header">
-              <span class="mat-name">${ind.name}</span>
-              <span class="mat-count">${levels.length} tile${levels.length !== 1 ? 's' : ''}</span>
-            </div>
-            ${levels.length > 0 ? `
-              ${showDetail ? Object.entries(levelCounts).map(([l, count]) => {
-                const ld = ind.levels[l];
-                const isTop = parseInt(l) === topLevel;
-                return `<div class="mat-level-row ${isTop ? 'top-tile' : ''}">
-                  <span class="mat-level-label">L${l}${count > 1 ? ' x' + count : ''}</span>
-                  <span class="mat-level-info">£${ld.cost}${ld.coal ? ' +' + ld.coal + 'co' : ''}${ld.iron ? ' +' + ld.iron + 'ir' : ''} → +${ld.income}inc ${ld.vp}VP${ld.cubes ? ' ' + ld.cubes + 'cb' : ''}</span>
-                </div>`;
-              }).join('') : `<div class="mat-levels-row">
-                ${Object.entries(levelCounts).map(([l, count]) =>
-                  `<span class="mat-tile">L${l}${count > 1 ? 'x' + count : ''}</span>`
-                ).join(' ')}
-              </div>`}
-              ${tileData ? `<div class="mat-detail">
-                Next: L${topLevel} — £${tileData.cost}${tileData.coal ? ' +' + tileData.coal + '⬛' : ''}${tileData.iron ? ' +' + tileData.iron + '🟧' : ''} → +${tileData.income} inc, ${tileData.vp} VP
-              </div>` : ''}
-            ` : '<div class="mat-detail muted">(all built)</div>'}
-          </div>`;
-        }).join('')}
-      </div>`}
-    `;
+    const developed = myPlayer.developedTiles || [];
+    const canalRemoved = myPlayer.canalRemovedTiles || [];
+
+    // Count tiles on board for this player
+    const onBoard = {};
+    for (const loc of Object.values(gameState.board.locations)) {
+      for (const slot of loc.slots) {
+        if (slot.owner === myPlayer.seat && slot.industryType) {
+          const key = slot.industryType + '_' + slot.level;
+          onBoard[key] = (onBoard[key] || 0) + 1;
+        }
+      }
+    }
+
+    let html = '<h4 class="collapsible-header" onclick="GameUI.toggleMat()">Industry Mat <span class="collapse-arrow">' + arrow + '</span></h4>';
+
+    if (!this.matCollapsed) {
+      html += '<div style="text-align:right;margin-bottom:3px"><span class="muted" style="font-size:9px;cursor:pointer" onclick="GameUI.toggleMatDetail()">' + (showDetail ? 'Hide' : 'Show') + ' detail</span></div>';
+      html += '<div class="mat-tiles">';
+
+      for (const [type, ind] of Object.entries(INDUSTRIES)) {
+        const matLevels = myPlayer.industryMat[type] || [];
+        const topLevel = matLevels[0];
+        const tileData = topLevel !== undefined ? ind.levels[topLevel] : null;
+
+        // Build full tile list
+        const allTiles = [];
+        for (const [lv, data] of Object.entries(ind.levels)) {
+          const count = data.tiles || 1;
+          for (let i = 0; i < count; i++) allTiles.push(parseInt(lv));
+        }
+
+        // Count per level per source
+        const matCounts = {};
+        for (const l of matLevels) matCounts[l] = (matCounts[l] || 0) + 1;
+        const devCounts = {};
+        for (const d of developed) { if (d.type === type) devCounts[d.level] = (devCounts[d.level] || 0) + 1; }
+        const canalCounts = {};
+        for (const c of canalRemoved) { if (c.type === type) canalCounts[c.level] = (canalCounts[c.level] || 0) + 1; }
+
+        // Assign status to each tile
+        const used = { mat: {}, board: {}, dev: {}, canal: {} };
+        const tiles = allTiles.map(lv => {
+          const key = type + '_' + lv;
+          const inMat = (matCounts[lv] || 0) - (used.mat[lv] || 0);
+          const inBoard = (onBoard[key] || 0) - (used.board[lv] || 0);
+          const inDev = (devCounts[lv] || 0) - (used.dev[lv] || 0);
+          const inCanal = (canalCounts[lv] || 0) - (used.canal[lv] || 0);
+          let status = 'available';
+          if (inMat > 0) { used.mat[lv] = (used.mat[lv] || 0) + 1; status = 'available'; }
+          else if (inBoard > 0) { used.board[lv] = (used.board[lv] || 0) + 1; status = 'onBoard'; }
+          else if (inDev > 0) { used.dev[lv] = (used.dev[lv] || 0) + 1; status = 'developed'; }
+          else if (inCanal > 0) { used.canal[lv] = (used.canal[lv] || 0) + 1; status = 'canalRemoved'; }
+          return { lv, status };
+        });
+
+        html += '<div class="mat-group"><div class="mat-header"><span class="mat-name">' + ind.name + '</span></div>';
+        html += '<div class="mat-tiles-row">';
+        for (const t of tiles) {
+          html += this.renderTileBox(t.lv, t.status, topLevel, ind, showDetail);
+        }
+        html += '</div>';
+
+        if (tileData) {
+          html += '<div class="mat-detail">Next: ' + topLevel + ' — £' + tileData.cost;
+          if (tileData.coal) html += ' +' + tileData.coal + '⬛';
+          if (tileData.iron) html += ' +' + tileData.iron + '🟧';
+          html += ' → <span class="tile-inc-circle tile-inc-inline">+' + tileData.income + '</span>';
+          html += ' <span class="tile-vp-hex tile-vp-inline">' + tileData.vp + '</span></div>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+
+      // Out of game section
+      if (developed.length > 0 || canalRemoved.length > 0) {
+        html += '<div class="mat-outofgame"><div class="mat-header"><span class="mat-name muted">Out of game</span></div>';
+        if (developed.length > 0) {
+          html += '<div class="mat-oog-row"><span class="muted">Developed:</span> ';
+          html += developed.map(d => '<span class="mat-tile-box tile-used" title="Developed">' + d.level + '</span>').join('');
+          html += '</div>';
+        }
+        if (canalRemoved.length > 0) {
+          html += '<div class="mat-oog-row"><span class="muted">Canal removed:</span> ';
+          html += canalRemoved.map(c => '<span class="mat-tile-box tile-used" title="Removed end of Canal era">' + c.level + '</span>').join('');
+          html += '</div>';
+        }
+        html += '</div>';
+      }
+    }
+
+    panel.innerHTML = html;
   },
 
   // ============ LOG ============

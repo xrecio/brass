@@ -307,11 +307,43 @@ a:hover { text-decoration: underline; }
   display: inline-block; padding: 1px 5px; font-family: monospace; font-size: 9px;
   background: var(--surface-light); border-radius: 2px; cursor: help;
 }
-.mat-detail { font-size: 9px; color: var(--text-muted); line-height: 1.3; }
-.mat-level-row { display: flex; justify-content: space-between; align-items: center; padding: 1px 0; border-bottom: 1px solid #ffffff08; font-size: 9px; }
-.mat-level-label { font-family: monospace; font-weight: bold; min-width: 22px; }
-.mat-level-info { color: var(--text-muted); }
-.mat-level-row.top-tile { background: #ffffff0a; }
+.mat-detail { font-size: 9px; color: var(--text-muted); line-height: 1.5; }
+
+/* Individual tile boxes */
+.mat-tiles-row { display: flex; flex-wrap: wrap; gap: 2px; margin: 3px 0; }
+.mat-tile-box {
+  display: inline-flex; flex-direction: column; align-items: center;
+  width: 22px; padding: 2px 1px; border: 1px solid #666;
+  border-radius: 3px; font-size: 8px; text-align: center;
+  background: var(--surface-light);
+}
+.mat-tile-box.tile-avail { border-color: #888; background: var(--surface-light); }
+.mat-tile-box.tile-next { border-color: var(--gold); background: #3a3520; box-shadow: 0 0 4px var(--gold); }
+.mat-tile-box.tile-board { border-color: #555; background: #2a3a2a; opacity: 0.6; }
+.mat-tile-box.tile-used { border-color: #444; background: #222; opacity: 0.35; }
+.tile-num { font-weight: bold; font-size: 9px; line-height: 1; }
+
+/* VP hexagon (pink) */
+.tile-vp-hex {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 14px; height: 13px; font-size: 7px; font-weight: bold;
+  background: #cc3366; color: #fff; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  line-height: 1;
+}
+.tile-vp-inline { width: 16px; height: 15px; font-size: 8px; vertical-align: middle; }
+
+/* Income circle (orange) */
+.tile-inc-circle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 14px; height: 14px; font-size: 6px; font-weight: bold;
+  background: #e08030; color: #fff; border-radius: 50%;
+  line-height: 1;
+}
+.tile-inc-inline { width: 16px; height: 16px; font-size: 7px; vertical-align: middle; }
+
+/* Out of game section */
+.mat-outofgame { margin-top: 6px; padding-top: 4px; border-top: 1px solid #333; }
+.mat-oog-row { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; font-size: 9px; margin-top: 2px; }
 
 /* Floating action hints (overlaps map, left of right panel) */
 .action-hints-float {

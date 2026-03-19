@@ -245,44 +245,45 @@ const BoardRenderer = {
 
   drawResourcePanel(panelId, label, cubes, cubeColor, textColor, slotPrices) {
     const pos = this.getMarketPos(panelId);
-    const slotW = 11, slotH = 11, gap = 2;
-    const totalW = 8 * (slotW + gap) + 30;
+    const slotSize = 11, gap = 2;
+    const panelW = 24;
+    const panelH = 8 * (slotSize + gap) + 16;
 
     // Background (draggable)
     const bg = this.createAndAppend('rect', {
-      x: pos.x - 4, y: pos.y - 10,
-      width: totalW, height: 26,
+      x: pos.x - panelW/2, y: pos.y - 6,
+      width: panelW, height: panelH,
       rx: 3, fill: '#00000077', stroke: this.editMode ? '#ffcc00' : '#88888844', 'stroke-width': this.editMode ? 1.5 : 0.5
     });
     bg.addEventListener('mousedown', (e) => this.onDragStart(e, panelId, 'market'));
 
     // Label
     this.createAndAppend('text', {
-      x: pos.x, y: pos.y + 4,
-      'text-anchor': 'start', 'font-size': '7', fill: textColor,
+      x: pos.x, y: pos.y + 2,
+      'text-anchor': 'middle', 'font-size': '6', fill: textColor,
       'font-weight': 'bold', 'pointer-events': 'none'
     }).textContent = label;
 
-    // Slots (left=cheapest £1, right=most expensive £4)
-    const startX = pos.x + 26;
+    // Slots vertical (top=most expensive £4, bottom=cheapest £1)
+    const startY = pos.y + 8;
     for (let i = 0; i < 8; i++) {
-      const sx = startX + i * (slotW + gap);
-      const filled = i < cubes; // slots fill from left (cheapest)
-      const price = slotPrices[i];
+      const slotIdx = 7 - i; // top = slot 7 (expensive), bottom = slot 0 (cheap)
+      const sy = startY + i * (slotSize + gap);
+      const filled = slotIdx < cubes;
+      const price = slotPrices[slotIdx];
 
-      // Slot box
       this.createAndAppend('rect', {
-        x: sx, y: pos.y - 5,
-        width: slotW, height: slotH,
+        x: pos.x - slotSize/2, y: sy,
+        width: slotSize, height: slotSize,
         rx: 1,
         fill: filled ? cubeColor : '#222',
         stroke: '#666', 'stroke-width': 0.5
       });
 
-      // Price label below
+      // Price label to the right
       this.createAndAppend('text', {
-        x: sx + slotW/2, y: pos.y + 12,
-        'text-anchor': 'middle', 'font-size': '5', fill: '#888',
+        x: pos.x + slotSize/2 + 3, y: sy + slotSize/2 + 2,
+        'text-anchor': 'start', 'font-size': '5', fill: '#888',
         'pointer-events': 'none'
       }).textContent = '£' + price;
     }
