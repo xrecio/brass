@@ -62,20 +62,33 @@ const GameUI = {
     // Enforce floating hand min-width to fit all cards in one row
     const el = document.getElementById('floating-hand');
     if (el) {
-      const gap = 4; // matches .floating-hand-cards gap
-      const padding = 20; // container horizontal padding
+      const gap = 4;
+      const padding = 20;
       const totalCardsW = cards.length * w + (cards.length - 1) * gap + padding;
       el.style.minWidth = totalCardsW + 'px';
+
+      // Convert CSS centering to absolute left on first sizing (prevents resize jump)
+      if (el.style.transform && el.style.transform.includes('translateX')) {
+        const rect = el.getBoundingClientRect();
+        el.style.left = rect.left + 'px';
+        el.style.transform = 'none';
+        el.style.bottom = 'auto';
+        el.style.top = rect.top + 'px';
+      }
     }
 
     this._sizingCards = false;
   },
 
+  _floatResizeTimer: null,
+
   initFloatingHandResize() {
     const el = document.getElementById('floating-hand');
     if (!el || this._floatResizeObserver) return;
     this._floatResizeObserver = new ResizeObserver(() => {
-      if (!this._sizingCards) this.sizeFloatingCards();
+      if (this._sizingCards) return;
+      clearTimeout(this._floatResizeTimer);
+      this._floatResizeTimer = setTimeout(() => this.sizeFloatingCards(), 50);
     });
     this._floatResizeObserver.observe(el);
   },
