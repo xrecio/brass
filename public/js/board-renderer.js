@@ -536,12 +536,21 @@ const BoardRenderer = {
     const panelW = numPlayers * colW + 4;
     const panelH = 36;
 
-    this.createPanelBg('vpPanel', pos.x - 2, pos.y - 6, panelW, panelH);
+    // Pink-tinted panel background matching VP hexagon color
+    const vpBgX = pos.x - 2, vpBgY = pos.y - 6;
+    const vpBg = this.createAndAppend('rect', {
+      x: vpBgX, y: vpBgY, width: panelW, height: panelH,
+      rx: 3, fill: '#cc336622',
+      stroke: (this.editMode || this.resizeMode) ? '#ffcc00' : '#cc336666',
+      'stroke-width': (this.editMode || this.resizeMode) ? 1.5 : 0.8
+    });
+    vpBg.addEventListener('mousedown', (e) => this.onDragStart(e, 'vpPanel', 'market'));
+    this.addResizeHandle('vpPanel', vpBgX, vpBgY, panelW, panelH);
 
     // Label
     this.createAndAppend('text', {
       x: pos.x + panelW/2 - 2, y: pos.y + 2,
-      'text-anchor': 'middle', 'font-size': '5', fill: '#ccc',
+      'text-anchor': 'middle', 'font-size': '5', fill: '#cc3366',
       'font-weight': 'bold', 'pointer-events': 'none'
     }).textContent = 'VICTORY POINTS';
 
