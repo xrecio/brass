@@ -213,9 +213,7 @@ const GameUI = {
       const cardCount = (p.hand && p.hand.length > 0) ? p.hand.length : (p.handCount || 0);
       const fives = Math.floor(p.money / 5);
       const ones = p.money % 5;
-      const moneyDiscs = (fives > 6
-        ? '<span class="money-disc silver">' + fives + '</span>'
-        : Array(fives).fill('<span class="money-disc silver">5</span>').join(''))
+      const moneyDiscs = Array(fives).fill('<span class="money-disc silver">5</span>').join('')
         + Array(ones).fill('<span class="money-disc bronze">1</span>').join('');
       return '<div class="player-info ' + (isCurrent ? 'current' : '') + ' ' + (isMe ? 'me' : '') + '"'
         + ' style="border-color: ' + BOARD.playerColors[p.seat] + '">'
@@ -1007,7 +1005,18 @@ const GameUI = {
     const panel = document.getElementById('log-panel');
     const logs = gameState.log || [];
     const recent = logs.slice(-20);
-    panel.innerHTML = recent.map(l => `<div class="log-entry">${l.msg}</div>`).join('');
+    panel.innerHTML = recent.map(l => {
+      // Find player color from message
+      let color = '';
+      for (const p of gameState.players) {
+        if (l.msg && l.msg.includes(p.username)) {
+          color = BOARD.playerColors[p.seat];
+          break;
+        }
+      }
+      const style = color ? ' style="color:' + color + '"' : '';
+      return '<div class="log-entry"' + style + '>' + l.msg + '</div>';
+    }).join('');
     const wrapper = document.getElementById('log-wrapper');
     if (!wrapper.classList.contains('collapsed')) {
       panel.scrollTop = panel.scrollHeight;
