@@ -316,7 +316,7 @@ const BoardRenderer = {
     // Label
     this.createAndAppend('text', {
       x: pos.x, y: top - 6,
-      'text-anchor': 'middle', 'font-size': '6', fill: '#e94560',
+      'text-anchor': 'middle', 'font-size': '6', fill: '#ccc',
       'font-weight': 'bold', 'pointer-events': 'none'
     }).textContent = 'DEMAND';
 
@@ -390,8 +390,9 @@ const BoardRenderer = {
     this.beginScaledGroup('turnOrderPanel', pos.x, pos.y);
     const numPlayers = state.players.length;
     const rowH = 14;
-    const panelH = numPlayers * rowH + 16;
-    const panelW = 60;
+    const panelH = numPlayers * rowH + 20;
+    const panelW = 72;
+    const ordinals = ['1st', '2nd', '3rd', '4th'];
 
     this.createPanelBg('turnOrderPanel', pos.x - panelW/2, pos.y - 6, panelW, panelH);
 
@@ -405,17 +406,25 @@ const BoardRenderer = {
     for (let i = 0; i < state.turnOrder.length; i++) {
       const seat = state.turnOrder[i];
       const p = state.players[seat];
-      const y = pos.y + 8 + i * rowH;
+      const y = pos.y + 12 + i * rowH;
       const isCurrent = seat === currentSeat;
 
+      // Ordinal (1st, 2nd...)
+      this.createAndAppend('text', {
+        x: pos.x - panelW/2 + 3, y: y + 3,
+        'text-anchor': 'start', 'font-size': '5',
+        fill: '#888', 'pointer-events': 'none'
+      }).textContent = ordinals[i] || '';
+
+      // Color square
       this.createAndAppend('rect', {
-        x: pos.x - panelW/2 + 3, y: y - 4,
+        x: pos.x - panelW/2 + 17, y: y - 4,
         width: 8, height: 8, rx: 1,
         fill: BOARD.playerColors[seat],
         stroke: isCurrent ? '#fff' : 'none', 'stroke-width': isCurrent ? 1.5 : 0
       });
       this.createAndAppend('text', {
-        x: pos.x - panelW/2 + 14, y: y + 3,
+        x: pos.x - panelW/2 + 28, y: y + 3,
         'text-anchor': 'start', 'font-size': '6',
         fill: isCurrent ? '#fff' : '#aaa',
         'font-weight': isCurrent ? 'bold' : 'normal',
