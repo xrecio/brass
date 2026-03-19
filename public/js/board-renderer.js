@@ -16,6 +16,7 @@ const BoardRenderer = {
 
   init() {
     this.svg = document.getElementById('game-board');
+    this.initMarketDefaults();
 
     // Load saved positions: user's own, or fall back to xai's
     if (typeof CUSTOM_POSITIONS === 'object' && CUSTOM_POSITIONS !== null) {
@@ -262,8 +263,8 @@ const BoardRenderer = {
     }
   },
 
-  // Default positions for market panels (draggable)
-  marketDefaults: {
+  // Original factory defaults for market panels (never mutated)
+  MARKET_FACTORY: {
     turnOrderPanel:  { x: 573, y: 200 },
     moneySpentPanel: { x: 573, y: 290 },
     demandPanel:     { x: 573, y: 400 },
@@ -273,8 +274,18 @@ const BoardRenderer = {
     incomePanel:     { x: 30,  y: 220 }
   },
 
+  // Working copy (may be mutated during drag, restored on undo)
+  marketDefaults: {},
+
+  initMarketDefaults() {
+    this.marketDefaults = JSON.parse(JSON.stringify(this.MARKET_FACTORY));
+  },
+
   getMarketPos(id) {
-    return this.customPositions[id] || this.marketDefaults[id] || { x: 100, y: 100 };
+    if (this.customPositions[id]) return this.customPositions[id];
+    if (this.marketDefaults[id]) return this.marketDefaults[id];
+    if (this.MARKET_FACTORY[id]) return this.MARKET_FACTORY[id];
+    return { x: 100, y: 100 };
   },
 
   drawMarketPanels() {
@@ -952,7 +963,7 @@ const BoardRenderer = {
   },
 
   applyAndRender(positions) {
-    // Reset to factory defaults first
+    // Reset everything to factory defaults
     for (const [locId, loc] of Object.entries(BOARD_DEFAULTS.locations)) {
       BOARD.locations[locId].x = loc.x;
       BOARD.locations[locId].y = loc.y;
@@ -961,9 +972,13 @@ const BoardRenderer = {
       BOARD.nonBuildable[id].x = wp.x;
       BOARD.nonBuildable[id].y = wp.y;
     }
+    this.initMarketDefaults(); // reset market panels to factory positions
+
+    // Apply the given positions on top
     this.customPositions = positions;
     this.applyCustomPositions();
-    for (const id of Object.keys(this.marketDefaults)) {
+    // Update marketDefaults for panels that have custom positions
+    for (const id of Object.keys(this.MARKET_FACTORY)) {
       if (this.customPositions[id]) {
         this.marketDefaults[id] = { x: this.customPositions[id].x, y: this.customPositions[id].y };
       }
