@@ -307,36 +307,59 @@ const BoardRenderer = {
     const pos = this.getMarketPos('demandPanel');
     this.beginScaledGroup('demandPanel', pos.x, pos.y);
     const demand = state.distantMarketDemand;
-    const w = 24, h = 180;
+    const w = 38, h = 180;
+    const incomeValues = [3, 3, 2, 2, 1, 1, 0, 0]; // income bonus at demand 8,7,6,5,4,3,2,1
+    const minimal = this.minimalMode;
+
+    // Label above the panel
+    this.createAndAppend('text', {
+      x: pos.x, y: pos.y - h/2 - 16,
+      'text-anchor': 'middle', 'font-size': '6', fill: '#ccc',
+      'font-weight': 'bold', 'pointer-events': 'none'
+    }).textContent = 'DEMAND';
+
     this.createPanelBg('demandPanel', pos.x - w/2, pos.y - h/2 - 10, w, h + 20);
 
     const step = h / 8;
     const top = pos.y - h/2;
 
-    // Label
-    this.createAndAppend('text', {
-      x: pos.x, y: top - 6,
-      'text-anchor': 'middle', 'font-size': '6', fill: '#ccc',
-      'font-weight': 'bold', 'pointer-events': 'none'
-    }).textContent = 'DEMAND';
-
-    // Scale
+    // Scale with income circles
     for (let i = 0; i <= 8; i++) {
       const y = top + i * step;
+      const level = 8 - i;
+
+      // Demand number
       this.createAndAppend('text', {
-        x: pos.x - 14, y: y + 3,
+        x: pos.x - 8, y: y + 3,
         'text-anchor': 'end', 'font-size': '6', fill: '#888', 'pointer-events': 'none'
-      }).textContent = 8 - i;
+      }).textContent = level;
+
+      // Income circle (for levels 1-8)
+      if (i < 8) {
+        const inc = incomeValues[i];
+        const incFill = minimal ? 'none' : '#e08030';
+        const incStroke = minimal ? '#e08030' : 'none';
+        const incTextFill = minimal ? '#e08030' : '#fff';
+        this.createAndAppend('circle', {
+          cx: pos.x + 10, cy: y, r: 5,
+          fill: incFill, stroke: incStroke, 'stroke-width': minimal ? 0.8 : 0
+        });
+        this.createAndAppend('text', {
+          x: pos.x + 10, y: y + 2.5,
+          'text-anchor': 'middle', 'font-size': '5', fill: incTextFill,
+          'font-weight': 'bold', 'pointer-events': 'none'
+        }).textContent = '+' + inc;
+      }
     }
 
     // Marker
     const markerY = top + (8 - demand) * step;
     this.createAndAppend('circle', {
-      cx: pos.x, cy: markerY, r: 6,
+      cx: pos.x - 3, cy: markerY, r: 6,
       fill: '#e94560', stroke: '#fff', 'stroke-width': 1.5
     });
     this.createAndAppend('text', {
-      x: pos.x, y: markerY + 3,
+      x: pos.x - 3, y: markerY + 3,
       'text-anchor': 'middle', 'font-size': '7', fill: '#fff',
       'font-weight': 'bold', 'pointer-events': 'none'
     }).textContent = demand;
