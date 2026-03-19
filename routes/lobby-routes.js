@@ -90,10 +90,14 @@ router.post('/games/quick', requireLogin, (req, res) => {
   db.updateGame(game.id, { status: 'active' });
   db.setGameState(game.id, JSON.stringify(state), 0);
 
-  const botModule = require('../lib/bot-engine');
-  botModule.checkAndPlayBot(game.id);
-
+  // Redirect first, then trigger bots (so page loads before bots modify state)
   res.redirect('/games/' + game.id);
+
+  // Trigger bots after redirect
+  setTimeout(() => {
+    const botModule = require('../lib/bot-engine');
+    botModule.checkAndPlayBot(game.id);
+  }, 2000);
 });
 
 router.post('/games/:id/join', requireLogin, (req, res) => {

@@ -29,23 +29,27 @@
         <div class="stat-label">Username</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value"><%= new Date(accountUser.created_at).toLocaleDateString() %></div>
+        <div class="stat-value-sm"><%= new Date(accountUser.created_at).toLocaleDateString() %></div>
         <div class="stat-label">Member Since</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value"><%= stats.gamesPlayed %></div>
-        <div class="stat-label">Total Games</div>
+        <div class="stat-value"><%= activeGames %></div>
+        <div class="stat-label">Active Games</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value"><%= finishedGames %></div>
+        <div class="stat-label">Finished Games</div>
       </div>
       <div class="stat-card">
         <div class="stat-value"><%= stats.wins %></div>
         <div class="stat-label">Wins</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value"><%= accountUser.last_login ? new Date(accountUser.last_login).toLocaleString() : 'N/A' %></div>
+        <div class="stat-value-sm"><%= accountUser.last_login ? new Date(accountUser.last_login).toLocaleString() : 'Now' %></div>
         <div class="stat-label">Last Login</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value"><%= accountUser.login_count || 0 %></div>
+        <div class="stat-value"><%= accountUser.login_count || 1 %></div>
         <div class="stat-label">Login Count</div>
       </div>
     </div>
