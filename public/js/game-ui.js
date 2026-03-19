@@ -566,14 +566,19 @@ const GameUI = {
   updateLog() {
     const panel = document.getElementById('log-panel');
     const logs = gameState.log || [];
-    const recent = logs.slice(-15);
-    panel.innerHTML = `
-      <h4>Game Log</h4>
-      <div class="log-entries">
-        ${recent.map(l => `<div class="log-entry">${l.msg}</div>`).join('')}
-      </div>
-    `;
-    panel.scrollTop = panel.scrollHeight;
+    const recent = logs.slice(-20);
+    panel.innerHTML = recent.map(l => `<div class="log-entry">${l.msg}</div>`).join('');
+    const wrapper = document.getElementById('log-wrapper');
+    if (!wrapper.classList.contains('collapsed')) {
+      panel.scrollTop = panel.scrollHeight;
+    }
+  },
+
+  toggleLog() {
+    const wrapper = document.getElementById('log-wrapper');
+    wrapper.classList.toggle('collapsed');
+    const arrow = document.getElementById('log-arrow');
+    arrow.innerHTML = wrapper.classList.contains('collapsed') ? '&#9650;' : '&#9660;';
   }
 };
 

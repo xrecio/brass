@@ -1,8 +1,9 @@
 // SVG Board Renderer for Brass: Lancashire
-// Uses the actual game board map as background with interactive overlay
+// Renders locations as rectangles overlaying the game board map image
 
 const BoardRenderer = {
   svg: null,
+  mapImage: null,
 
   init() {
     this.svg = document.getElementById('game-board');
@@ -13,19 +14,21 @@ const BoardRenderer = {
     if (!this.svg) return;
     this.svg.innerHTML = '';
 
-    // Board map background image
-    const img = this.createSVG('image', {
+    // Board map background
+    this.mapImage = this.createSVG('image', {
       href: '/img/board-map.jpg',
       x: 0, y: 0,
       width: 600, height: 520,
-      preserveAspectRatio: 'xMidYMid meet'
+      preserveAspectRatio: 'xMidYMid meet',
+      opacity: 0.7
     });
-    this.svg.appendChild(img);
+    this.svg.appendChild(this.mapImage);
 
-    // Semi-transparent overlay for contrast
-    this.addRect(0, 0, 600, 520, '#000', 0.15);
+    // Restore slider value
+    const slider = document.getElementById('map-dim-slider');
+    if (slider) this.mapImage.setAttribute('opacity', slider.value / 100);
 
-    // Draw links first (below locations)
+    // Draw links
     this.drawLinks();
 
     // Draw non-buildable waypoints
@@ -34,8 +37,14 @@ const BoardRenderer = {
     // Draw external ports
     this.drawExternalPorts();
 
-    // Draw buildable locations
+    // Draw locations as rectangles
     this.drawLocations();
+  },
+
+  setMapOpacity(value) {
+    if (this.mapImage) {
+      this.mapImage.setAttribute('opacity', value / 100);
+    }
   },
 
   drawLinks() {
@@ -68,25 +77,10 @@ const BoardRenderer = {
         dash = '2,4';
       }
 
-      // If link goes through a non-buildable waypoint, draw 2 segments
       if (link.through && BOARD.nonBuildable[link.through]) {
         const wp = BOARD.nonBuildable[link.through];
         this.drawLinkLine(from.x, from.y, wp.x, wp.y, color, width, dash, link.id);
         this.drawLinkLine(wp.x, wp.y, to.x, to.y, color, width, dash, link.id);
-
-        // Double-segment indicator
-        if (linkState && linkState.owner === null && isAvailable) {
-          const label = this.createSVG('text', {
-            x: wp.x, y: wp.y - 10,
-            'text-anchor': 'middle',
-            'font-size': '8',
-            fill: '#ffcc00',
-            'font-weight': 'bold',
-            'pointer-events': 'none'
-          });
-          label.textContent = 'x2';
-          this.svg.appendChild(label);
-        }
       } else {
         this.drawLinkLine(from.x, from.y, to.x, to.y, color, width, dash, link.id);
       }
@@ -107,10 +101,9 @@ const BoardRenderer = {
   },
 
   drawNonBuildable() {
-    for (const [id, wp] of Object.entries(BOARD.nonBuildable)) {
-      // Small diamond marker
+    for (const [, wp] of Object.entries(BOARD.nonBuildable)) {
       const diamond = this.createSVG('polygon', {
-        points: `${wp.x},${wp.y-8} ${wp.x+8},${wp.y} ${wp.x},${wp.y+8} ${wp.x-8},${wp.y}`,
+        points: `${wp.x},${wp.y-6} ${wp.x+6},${wp.y} ${wp.x},${wp.y+6} ${wp.x-6},${wp.y}`,
         fill: '#33333388',
         stroke: '#66666688',
         'stroke-width': 1
@@ -118,10 +111,10 @@ const BoardRenderer = {
       this.svg.appendChild(diamond);
 
       const text = this.createSVG('text', {
-        x: wp.x, y: wp.y + 18,
+        x: wp.x, y: wp.y + 14,
         'text-anchor': 'middle',
-        'font-size': '7',
-        fill: '#ccc',
+        'font-size': '6',
+        fill: '#aaa',
         'font-style': 'italic',
         'pointer-events': 'none'
       });
@@ -131,50 +124,33 @@ const BoardRenderer = {
   },
 
   drawExternalPorts() {
-    for (const [id, port] of Object.entries(BOARD.externalPorts)) {
-      // External port marker (anchor shape)
-      const circle = this.createSVG('circle', {
-        cx: port.x, cy: port.y, r: 12,
-        fill: '#1a3a5a',
-        stroke: '#4488cc',
-        'stroke-width': 2
-      });
-      this.svg.appendChild(circle);
-
-      const icon = this.createSVG('text', {
-        x: port.x, y: port.y + 3,
-        'text-anchor': 'middle',
-        'font-size': '10',
-        fill: '#88ccff',
-        'font-weight': 'bold',
-        'pointer-events': 'none'
-      });
-      icon.textContent = 'E';
-      this.svg.appendChild(icon);
-
-      const label = this.createSVG('text', {
-        x: port.x, y: port.y + 22,
-        'text-anchor': 'middle',
-        'font-size': '8',
-        fill: '#88ccff',
-        'pointer-events': 'none'
-      });
-      label.textContent = port.name;
-      this.svg.appendChild(label);
-
-      // Draw dashed lines to connected locations
+    for (const [, port] of Object.entries(BOARD.externalPorts)) {
+      // Dashed lines to connected locations
       for (const locId of port.connectedTo) {
         const loc = BOARD.locations[locId];
         if (!loc) continue;
-        const line = this.createSVG('line', {
-          x1: port.x, y1: port.y,
-          x2: loc.x, y2: loc.y,
-          stroke: '#4488cc44',
-          'stroke-width': 1,
-          'stroke-dasharray': '3,3'
+        this.createAndAppend('line', {
+          x1: port.x, y1: port.y, x2: loc.x, y2: loc.y,
+          stroke: '#4488cc33', 'stroke-width': 1, 'stroke-dasharray': '3,3'
         });
-        this.svg.appendChild(line);
       }
+
+      const circle = this.createAndAppend('circle', {
+        cx: port.x, cy: port.y, r: 10,
+        fill: '#1a2a3acc', stroke: '#4488cc', 'stroke-width': 1.5
+      });
+
+      this.createAndAppend('text', {
+        x: port.x, y: port.y + 3,
+        'text-anchor': 'middle', 'font-size': '8', fill: '#88ccff',
+        'font-weight': 'bold', 'pointer-events': 'none'
+      }).textContent = 'E';
+
+      this.createAndAppend('text', {
+        x: port.x, y: port.y + 18,
+        'text-anchor': 'middle', 'font-size': '7', fill: '#88ccff',
+        'pointer-events': 'none'
+      }).textContent = port.name;
     }
   },
 
@@ -186,124 +162,119 @@ const BoardRenderer = {
       if (!locState) continue;
 
       const numSlots = locState.slots.length;
-      const radius = 16 + numSlots * 4;
+      const cols = Math.min(numSlots, 2);
+      const rows = Math.ceil(numSlots / 2);
 
-      // Location circle with semi-transparent fill so map shows through
-      const circle = this.createSVG('circle', {
-        cx: loc.x, cy: loc.y, r: radius,
-        fill: '#e8dcc8cc',
+      // Rectangle dimensions
+      const slotSize = 14;
+      const slotGap = 3;
+      const padX = 4;
+      const padY = 3;
+      const nameHeight = 10;
+
+      const rectW = cols * slotSize + (cols - 1) * slotGap + padX * 2;
+      const rectH = nameHeight + rows * slotSize + (rows - 1) * slotGap + padY * 2;
+      const rx = loc.x - rectW / 2;
+      const ry = loc.y - rectH / 2;
+
+      // Location rectangle
+      const rect = this.createAndAppend('rect', {
+        x: rx, y: ry, width: rectW, height: rectH,
+        rx: 3, ry: 3,
+        fill: '#d6c8a8aa',
         stroke: '#8b7355',
-        'stroke-width': 2,
+        'stroke-width': 1.5,
         'data-location': locId,
         class: 'board-location'
       });
-      this.svg.appendChild(circle);
 
-      // Location name
-      const text = this.createSVG('text', {
-        x: loc.x, y: loc.y - radius - 4,
+      // Location name inside the rectangle
+      this.createAndAppend('text', {
+        x: loc.x, y: ry + nameHeight,
         'text-anchor': 'middle',
-        'font-size': '8',
+        'font-size': '6.5',
         'font-family': 'sans-serif',
-        fill: '#fff',
+        fill: '#332211',
         'font-weight': 'bold',
-        'paint-order': 'stroke',
-        stroke: '#000',
-        'stroke-width': 2
-      });
-      text.textContent = loc.name;
-      this.svg.appendChild(text);
+        'pointer-events': 'none'
+      }).textContent = loc.name;
 
-      // Draw industry slots
-      this.drawSlots(locId, loc, locState);
+      // Draw slots in grid (max 2 per row)
+      const slotsStartY = ry + nameHeight + padY;
+      const slotsStartX = rx + padX;
+
+      for (let i = 0; i < numSlots; i++) {
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const sx = slotsStartX + col * (slotSize + slotGap) + slotSize / 2;
+        const sy = slotsStartY + row * (slotSize + slotGap) + slotSize / 2;
+
+        this.drawSlot(locId, locState.slots[i], i, sx, sy, slotSize);
+      }
     }
   },
 
-  drawSlots(locId, loc, locState) {
-    const slots = locState.slots;
-    const spacing = 18;
-    const startX = loc.x - (slots.length - 1) * spacing / 2;
+  drawSlot(locId, slot, index, cx, cy, size) {
+    const half = size / 2;
 
-    for (let i = 0; i < slots.length; i++) {
-      const slot = slots[i];
-      const sx = startX + i * spacing;
-      const sy = loc.y;
+    if (slot.owner !== null) {
+      // Filled slot
+      const fillColor = slot.flipped
+        ? BOARD.playerColors[slot.owner]
+        : BOARD.industryColors[slot.industryType] || '#ccc';
 
-      if (slot.owner !== null) {
-        // Filled slot
-        const fillColor = slot.flipped
-          ? BOARD.playerColors[slot.owner]
-          : BOARD.industryColors[slot.industryType] || '#ccc';
+      this.createAndAppend('rect', {
+        x: cx - half, y: cy - half,
+        width: size, height: size,
+        rx: 2,
+        fill: fillColor,
+        stroke: BOARD.playerColors[slot.owner],
+        'stroke-width': slot.flipped ? 2.5 : 1,
+        'data-location': locId, 'data-slot': index,
+        class: 'board-slot filled'
+      });
 
-        const rect = this.createSVG('rect', {
-          x: sx - 7, y: sy - 7,
-          width: 14, height: 14,
-          rx: 2,
-          fill: fillColor,
-          stroke: BOARD.playerColors[slot.owner],
-          'stroke-width': slot.flipped ? 3 : 1.5,
-          'data-location': locId,
-          'data-slot': i,
-          class: 'board-slot filled'
-        });
-        this.svg.appendChild(rect);
+      this.createAndAppend('text', {
+        x: cx, y: cy + 3,
+        'text-anchor': 'middle', 'font-size': '7', 'font-weight': 'bold',
+        fill: slot.industryType === 'coalMine' ? '#fff' : '#333',
+        'pointer-events': 'none'
+      }).textContent = BOARD.industryIcons[slot.industryType] + slot.level;
 
-        // Industry icon + level
-        const icon = this.createSVG('text', {
-          x: sx, y: sy + 3,
-          'text-anchor': 'middle',
-          'font-size': '8',
-          'font-weight': 'bold',
-          fill: slot.industryType === 'coalMine' ? '#fff' : '#333',
-          'pointer-events': 'none'
-        });
-        icon.textContent = BOARD.industryIcons[slot.industryType] + slot.level;
-        this.svg.appendChild(icon);
-
-        // Resource cubes
-        if (slot.resources > 0) {
-          const cubeColor = slot.industryType === 'coalMine' ? '#111' : '#d4740e';
-          for (let r = 0; r < slot.resources; r++) {
-            const cube = this.createSVG('rect', {
-              x: sx - 7 + r * 4, y: sy + 9,
-              width: 3, height: 3,
-              fill: cubeColor,
-              stroke: '#fff',
-              'stroke-width': 0.5
-            });
-            this.svg.appendChild(cube);
-          }
+      // Resource cubes
+      if (slot.resources > 0) {
+        const cubeColor = slot.industryType === 'coalMine' ? '#111' : '#d4740e';
+        for (let r = 0; r < slot.resources; r++) {
+          this.createAndAppend('rect', {
+            x: cx - half + r * 4, y: cy + half + 1,
+            width: 3, height: 3,
+            fill: cubeColor, stroke: '#fff', 'stroke-width': 0.3
+          });
         }
-      } else {
-        // Empty slot - show allowed types
-        const allowed = slot.allowed;
-        const isDual = allowed.length > 1;
-
-        const rect = this.createSVG('rect', {
-          x: sx - 7, y: sy - 7,
-          width: 14, height: 14,
-          rx: 2,
-          fill: isDual ? '#ffffff22' : 'none',
-          stroke: '#8b735566',
-          'stroke-width': 1,
-          'stroke-dasharray': '3,2',
-          'data-location': locId,
-          'data-slot': i,
-          class: 'board-slot empty'
-        });
-        this.svg.appendChild(rect);
-
-        // Show allowed type icons
-        const label = this.createSVG('text', {
-          x: sx, y: sy + 3,
-          'text-anchor': 'middle',
-          'font-size': isDual ? '6' : '7',
-          fill: '#8b735599',
-          'pointer-events': 'none'
-        });
-        label.textContent = allowed.map(t => BOARD.industryIcons[t] || '?').join('/');
-        this.svg.appendChild(label);
       }
+    } else {
+      // Empty slot
+      const allowed = slot.allowed;
+      const isDual = allowed.length > 1;
+
+      this.createAndAppend('rect', {
+        x: cx - half, y: cy - half,
+        width: size, height: size,
+        rx: 2,
+        fill: isDual ? '#ffffff33' : '#ffffff18',
+        stroke: '#8b735555', 'stroke-width': 0.8,
+        'stroke-dasharray': '2,1.5',
+        'data-location': locId, 'data-slot': index,
+        class: 'board-slot empty'
+      });
+
+      this.createAndAppend('text', {
+        x: cx, y: cy + 2.5,
+        'text-anchor': 'middle',
+        'font-size': isDual ? '5' : '6',
+        fill: '#8b7355aa',
+        'pointer-events': 'none'
+      }).textContent = allowed.map(t => BOARD.industryIcons[t] || '?').join('/');
     }
   },
 
@@ -316,12 +287,10 @@ const BoardRenderer = {
     return el;
   },
 
-  addRect(x, y, w, h, fill, opacity) {
-    const rect = this.createSVG('rect', {
-      x, y, width: w, height: h,
-      fill, opacity: opacity || 1
-    });
-    this.svg.appendChild(rect);
+  createAndAppend(tag, attrs) {
+    const el = this.createSVG(tag, attrs);
+    this.svg.appendChild(el);
+    return el;
   },
 
   highlightLocations(locIds, callback) {

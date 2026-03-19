@@ -17,41 +17,39 @@
   </nav>
 
   <div class="game-container">
-    <!-- Player info bar -->
-    <div class="player-bar" id="player-bar"></div>
-
-    <!-- Main game area -->
     <div class="game-main">
+      <!-- Left panel: players + info + markets -->
+      <div class="left-panel" id="left-panel">
+        <div id="player-bar"></div>
+        <div class="panel-section" id="game-info"></div>
+        <div class="panel-section" id="market-panel"></div>
+      </div>
+
       <!-- Board -->
       <div class="board-container" id="board-container">
+        <div class="board-controls">
+          <label>Map <input type="range" id="map-dim-slider" min="0" max="100" value="70"
+                 oninput="BoardRenderer.setMapOpacity(this.value)"></label>
+        </div>
         <svg id="game-board" viewBox="0 0 600 520" xmlns="http://www.w3.org/2000/svg"></svg>
       </div>
 
-      <!-- Side panel -->
-      <div class="side-panel">
-        <!-- Game info -->
-        <div class="game-info-panel" id="game-info"></div>
-
-        <!-- Markets -->
-        <div class="market-panel" id="market-panel"></div>
-
-        <!-- Action controls -->
-        <div class="action-panel" id="action-panel"></div>
-
-        <!-- Hand -->
-        <div class="hand-panel" id="hand-panel"></div>
-
-        <!-- Industry mat -->
-        <div class="mat-panel" id="mat-panel"></div>
+      <!-- Right panel: actions + hand + mat -->
+      <div class="right-panel">
+        <div class="panel-section" id="action-panel"></div>
+        <div class="panel-section" id="hand-panel"></div>
+        <div class="panel-section" id="mat-panel"></div>
       </div>
     </div>
 
-    <!-- Game log -->
-    <div class="log-panel" id="log-panel"></div>
+    <!-- Collapsible log -->
+    <div class="log-wrapper" id="log-wrapper">
+      <div class="log-toggle" onclick="GameUI.toggleLog()">Game Log <span id="log-arrow">&#9660;</span></div>
+      <div class="log-panel" id="log-panel"></div>
+    </div>
   </div>
 
   <script>
-    // Inject initial state
     const GAME_ID = <%= game.id %>;
     const USER_ID = <%= userId %>;
     let gameState = <%- JSON.stringify(state) %>;
