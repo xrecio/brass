@@ -87,6 +87,12 @@ const BoardRenderer = {
 
   minimalMode: false,
   hideNames: false,
+  hideIcons: false,
+
+  toggleHideIcons(checked) {
+    this.hideIcons = checked;
+    this.render();
+  },
 
   toggleHideNames(checked) {
     this.hideNames = checked;
@@ -797,12 +803,14 @@ const BoardRenderer = {
         class: 'board-slot filled'
       });
 
-      this.createAndAppend('text', {
-        x: cx, y: cy + 3,
-        'text-anchor': 'middle', 'font-size': '7', 'font-weight': 'bold',
-        fill: slot.industryType === 'coalMine' ? '#fff' : '#333',
-        'pointer-events': 'none'
-      }).textContent = BOARD.industryIcons[slot.industryType] + slot.level;
+      if (!this.hideIcons) {
+        this.createAndAppend('text', {
+          x: cx, y: cy + 3,
+          'text-anchor': 'middle', 'font-size': '7', 'font-weight': 'bold',
+          fill: slot.industryType === 'coalMine' ? '#fff' : '#333',
+          'pointer-events': 'none'
+        }).textContent = BOARD.industryIcons[slot.industryType] + slot.level;
+      }
 
       // Resource cubes
       if (slot.resources > 0) {
@@ -860,13 +868,15 @@ const BoardRenderer = {
         });
       }
 
-      this.createAndAppend('text', {
-        x: cx, y: cy + 2.5,
-        'text-anchor': 'middle',
-        'font-size': isDual ? '5' : '6',
-        fill: '#ffffff88',
-        'pointer-events': 'none'
-      }).textContent = allowed.map(t => BOARD.industryIcons[t] || '?').join('/');
+      if (!this.hideIcons) {
+        this.createAndAppend('text', {
+          x: cx, y: cy + 2.5,
+          'text-anchor': 'middle',
+          'font-size': isDual ? '5' : '6',
+          fill: '#ffffff88',
+          'pointer-events': 'none'
+        }).textContent = allowed.map(t => BOARD.industryIcons[t] || '?').join('/');
+      }
     }
   },
 
