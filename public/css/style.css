@@ -307,7 +307,8 @@ a:hover { text-decoration: underline; }
 /* Hand */
 .hand-cards { display: flex; flex-wrap: wrap; gap: 3px; }
 .card {
-  width: 52px;
+  width: 42px;
+  height: 68px; /* golden ratio ~1.618 */
   padding: 3px 4px;
   border-radius: 4px;
   border: 2px solid #555;
@@ -315,23 +316,29 @@ a:hover { text-decoration: underline; }
   text-align: center;
   transition: all 0.15s;
   flex-shrink: 0;
-}
-.card.card-big {
-  width: 56px;
-  min-height: 74px;
-  padding: 6px 4px;
-  border-radius: 5px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
+}
+.card.card-big {
+  width: 52px;
+  height: 84px; /* golden ratio */
+  padding: 4px 5px;
+  border-radius: 5px;
 }
 .card:hover { border-color: var(--gold); background: var(--surface-light); }
 .card.selected { border-color: var(--gold); background: var(--surface-light); box-shadow: 0 0 8px var(--gold); }
 .card.location { background: #2a3a2a; }
 .card.industry { background: #3a2a2a; }
 .card-type { font-size: 8px; color: var(--text-muted); text-transform: uppercase; }
-.card-label { font-size: 10px; font-weight: bold; margin-top: 4px; word-break: break-word; line-height: 1.2; }
+.card-label {
+  font-size: 9px; font-weight: bold; margin-top: 3px;
+  overflow-wrap: break-word; word-break: normal; /* never split a word */
+  line-height: 1.15; max-width: 100%;
+}
+.card-big .card-label { font-size: 10px; }
 
 /* Floating hand */
 .floating-hand {
@@ -368,12 +375,11 @@ a:hover { text-decoration: underline; }
   align-items: stretch;
 }
 .floating-hand-cards .card.card-big {
-  height: auto;
-  min-height: unset;
-  flex: 0 0 auto;
-  min-width: 56px;
+  height: 100%;
   width: auto;
-  padding: 6px 8px;
+  min-width: 52px;
+  aspect-ratio: 1 / 1.618; /* golden ratio, height > width */
+  padding: 4px 6px;
 }
 
 /* Action popup (on card hover) */
