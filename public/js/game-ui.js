@@ -105,7 +105,7 @@ const GameUI = {
         + '</div>'
         + '<div class="player-stats-grid">'
         + '<span class="pstat"><span class="tile-vp-hex tile-vp-inline">' + p.vp + '</span></span>'
-        + '<span class="pstat" title="Income level">Inc ' + p.income + '</span>'
+        + '<span class="pstat" title="Income level"><span class="tile-inc-circle tile-inc-inline">' + p.income + '</span></span>'
         + '<span class="pstat" title="Cards">' + cardCount + ' cards</span>'
         + '</div>'
         + '<div class="money-discs" title="£' + p.money + '">' + moneyDiscs + '</div>'
@@ -678,13 +678,13 @@ const GameUI = {
     return [...new Set(validLocs)];
   },
 
-  renderCardHTML(cardId) {
+  renderCardHTML(cardId, big) {
     const info = parseCardId(cardId);
     const label = info.type === 'location'
       ? (BOARD.locations[info.location]?.name || info.location)
       : (INDUSTRIES[info.industry]?.name || info.industry);
     const isSelected = this.selectedCard === cardId;
-    return '<div class="card ' + info.type + (isSelected ? ' selected' : '') + '"'
+    return '<div class="card ' + (big ? 'card-big ' : '') + info.type + (isSelected ? ' selected' : '') + '"'
       + ' onclick="GameUI.selectCard(\'' + cardId + '\')"'
       + ' onmouseenter="GameUI.onCardHover(\'' + cardId + '\', event)"'
       + ' onmouseleave="GameUI.onCardLeave()">'
@@ -704,20 +704,22 @@ const GameUI = {
       return;
     }
 
-    const cardsHTML = myPlayer.hand.map(c => this.renderCardHTML(c)).join('');
+    // cardsHTML no longer used directly; built per context below
 
-    const floatCheck = '<label class="float-check"><input type="checkbox" ' + (this.handDetached ? 'checked' : '') + ' onchange="GameUI.toggleDetachHand()"> Float</label>';
+    const floatCheck = '<label class="float-check" onclick="event.stopPropagation()"><input type="checkbox" ' + (this.handDetached ? 'checked' : '') + ' onchange="GameUI.toggleDetachHand()"> Float</label>';
+    const smallCardsHTML = myPlayer.hand.map(c => this.renderCardHTML(c, false)).join('');
+    const bigCardsHTML = myPlayer.hand.map(c => this.renderCardHTML(c, true)).join('');
 
     if (this.handDetached) {
       panel.innerHTML = '<h4 class="collapsible-header" onclick="GameUI.toggleHand()">Hand (' + myPlayer.hand.length + ') ' + floatCheck + '</h4>';
-      if (floatCards) floatCards.innerHTML = cardsHTML;
+      if (floatCards) floatCards.innerHTML = bigCardsHTML;
     } else {
       const arrow = this.handCollapsed ? '&#9654;' : '&#9660;';
       panel.innerHTML = '<h4 class="collapsible-header" onclick="GameUI.toggleHand()">'
         + 'Hand (' + myPlayer.hand.length + ') <span class="collapse-arrow">' + arrow + '</span> '
         + floatCheck
         + '</h4>'
-        + (this.handCollapsed ? '' : '<div class="hand-cards">' + cardsHTML + '</div>');
+        + (this.handCollapsed ? '' : '<div class="hand-cards">' + smallCardsHTML + '</div>');
       if (floatCards) floatCards.innerHTML = '';
     }
   },

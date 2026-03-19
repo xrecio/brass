@@ -32,6 +32,7 @@
         <div class="board-controls">
           <label>Map <input type="range" id="map-dim-slider" min="0" max="100" value="70"
                  oninput="BoardRenderer.setMapOpacity(this.value)"></label>
+          <label class="board-control-check"><input type="checkbox" id="minimal-toggle" onchange="BoardRenderer.toggleMinimal(this.checked)"> Minimal</label>
           <span class="board-control-sep">|</span>
           <button class="btn btn-sm board-edit-btn" id="toggle-links-btn" onclick="BoardRenderer.toggleLinks()">Links</button>
           <span class="board-control-sep">|</span>

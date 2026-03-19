@@ -80,6 +80,14 @@ const BoardRenderer = {
     }
   },
 
+  minimalMode: false,
+
+  toggleMinimal(checked) {
+    this.minimalMode = checked;
+    document.body.classList.toggle('minimal-mode', checked);
+    this.render(); // re-render SVG panels with minimal styling
+  },
+
   toggleLinks() {
     this.showLinks = !this.showLinks;
     const btn = document.getElementById('toggle-links-btn');
@@ -351,10 +359,10 @@ const BoardRenderer = {
       'font-weight': 'bold', 'pointer-events': 'none'
     }).textContent = label;
 
-    // Slots vertical (top=most expensive £4, bottom=cheapest £1)
+    // Slots vertical: top=cheapest £1, bottom=most expensive £4
     const startY = pos.y + 8;
     for (let i = 0; i < 8; i++) {
-      const slotIdx = 7 - i; // top = slot 7 (expensive), bottom = slot 0 (cheap)
+      const slotIdx = i; // top = slot 0 (cheapest £1), bottom = slot 7 (expensive £4)
       const sy = startY + i * (slotSize + gap);
       const filled = slotIdx < cubes;
       const price = slotPrices[slotIdx];
@@ -367,11 +375,12 @@ const BoardRenderer = {
         stroke: '#666', 'stroke-width': 0.5
       });
 
-      // Price label to the right
+      // Price + £ symbol inside the colored square
       this.createAndAppend('text', {
-        x: pos.x + slotSize/2 + 3, y: sy + slotSize/2 + 2,
-        'text-anchor': 'start', 'font-size': '5', fill: '#888',
-        'pointer-events': 'none'
+        x: pos.x, y: sy + slotSize/2 + 2,
+        'text-anchor': 'middle', 'font-size': '6',
+        fill: filled ? '#fff' : '#666',
+        'font-weight': 'bold', 'pointer-events': 'none'
       }).textContent = '£' + price;
     }
     this.endScaledGroup();
@@ -510,14 +519,16 @@ const BoardRenderer = {
       const cx = pos.x + i * colW + colW/2;
 
       // Colored square with VP
+      const vpFill = this.minimalMode ? 'none' : BOARD.playerColors[p.seat];
       this.createAndAppend('rect', {
         x: cx - 9, y: pos.y + 6,
         width: 18, height: 14, rx: 2,
-        fill: BOARD.playerColors[p.seat], stroke: '#fff', 'stroke-width': 0.5
+        fill: vpFill, stroke: BOARD.playerColors[p.seat], 'stroke-width': this.minimalMode ? 1.5 : 0.5
       });
       this.createAndAppend('text', {
         x: cx, y: pos.y + 16,
-        'text-anchor': 'middle', 'font-size': '8', fill: '#fff',
+        'text-anchor': 'middle', 'font-size': '8',
+        fill: this.minimalMode ? BOARD.playerColors[p.seat] : '#fff',
         'font-weight': 'bold', 'pointer-events': 'none'
       }).textContent = p.vp;
       // Name below
@@ -570,31 +581,52 @@ const BoardRenderer = {
       const bx = pos.x + col * (boxSize + gap);
       const by = startY + row * (boxSize + gap);
 
-      const hasPlayers = playerIncomes[num];
-      this.createAndAppend('rect', {
-        x: bx, y: by, width: boxSize, height: boxSize,
-        fill: hasPlayers ? BOARD.playerColors[hasPlayers[0]] : '#222',
-        stroke: hasPlayers ? '#fff' : '#444', 'stroke-width': hasPlayers ? 0.8 : 0.3,
-        rx: 0.5
-      });
+      const players = playerIncomes[num] || [];
+
+      if (players.length === 0) {
+        // Empty square
+        this.createAndAppend('rect', {
+          x: bx, y: by, width: boxSize, height: boxSize,
+          fill: '#222', stroke: '#444', 'stroke-width': 0.3, rx: 0.5
+        });
+      } else if (players.length === 1) {
+        // Single player
+        this.createAndAppend('rect', {
+          x: bx, y: by, width: boxSize, height: boxSize,
+          fill: BOARD.playerColors[players[0]], stroke: '#fff', 'stroke-width': 0.8, rx: 0.5
+        });
+      } else {
+        // Multiple players: split square evenly
+        const n = players.length;
+        if (n === 2) {
+          // Left/right split
+          this.createAndAppend('rect', { x: bx, y: by, width: boxSize/2, height: boxSize, fill: BOARD.playerColors[players[0]], rx: 0.5 });
+          this.createAndAppend('rect', { x: bx + boxSize/2, y: by, width: boxSize/2, height: boxSize, fill: BOARD.playerColors[players[1]], rx: 0.5 });
+        } else if (n === 3) {
+          // Three vertical strips
+          const w = boxSize / 3;
+          for (let pi = 0; pi < 3; pi++) {
+            this.createAndAppend('rect', { x: bx + pi * w, y: by, width: w, height: boxSize, fill: BOARD.playerColors[players[pi]] });
+          }
+        } else {
+          // Four quadrants
+          const h2 = boxSize / 2;
+          this.createAndAppend('rect', { x: bx, y: by, width: h2, height: h2, fill: BOARD.playerColors[players[0]] });
+          this.createAndAppend('rect', { x: bx + h2, y: by, width: h2, height: h2, fill: BOARD.playerColors[players[1]] });
+          this.createAndAppend('rect', { x: bx, y: by + h2, width: h2, height: h2, fill: BOARD.playerColors[players[2]] });
+          this.createAndAppend('rect', { x: bx + h2, y: by + h2, width: h2, height: h2, fill: BOARD.playerColors[players[3] || players[0]] });
+        }
+        // Border
+        this.createAndAppend('rect', { x: bx, y: by, width: boxSize, height: boxSize, fill: 'none', stroke: '#fff', 'stroke-width': 0.5, rx: 0.5 });
+      }
 
       // Show number every 10
       if (num % 10 === 0) {
         this.createAndAppend('text', {
           x: bx + boxSize/2, y: by + boxSize/2 + 1.5,
-          'text-anchor': 'middle', 'font-size': '3', fill: '#888',
+          'text-anchor': 'middle', 'font-size': '3', fill: players.length > 0 ? '#fff' : '#888',
           'pointer-events': 'none'
         }).textContent = num;
-      }
-
-      // If multiple players on same spot, show additional markers
-      if (hasPlayers && hasPlayers.length > 1) {
-        for (let pi = 1; pi < hasPlayers.length; pi++) {
-          this.createAndAppend('circle', {
-            cx: bx + boxSize - 1, cy: by + 1 + pi * 2, r: 1,
-            fill: BOARD.playerColors[hasPlayers[pi]]
-          });
-        }
       }
     }
     this.endScaledGroup();
