@@ -67,8 +67,8 @@ const BoardRenderer = {
     // Draw locations as rectangles
     this.drawLocations();
 
-    // Draw demand marker
-    this.drawDemandMarker();
+    // Draw market panels (demand, coal, iron)
+    this.drawMarketPanels();
   },
 
   setMapOpacity(value) {
@@ -175,52 +175,117 @@ const BoardRenderer = {
     }
   },
 
-  drawDemandMarker() {
+  // Default positions for market panels (draggable)
+  marketDefaults: {
+    demandPanel:  { x: 573, y: 380 },
+    coalPanel:    { x: 30,  y: 80 },
+    ironPanel:    { x: 30,  y: 140 }
+  },
+
+  getMarketPos(id) {
+    return this.customPositions[id] || this.marketDefaults[id] || { x: 100, y: 100 };
+  },
+
+  drawMarketPanels() {
     const state = gameState;
+    const slotPrices = [1, 1, 2, 2, 3, 3, 4, 4];
+
+    // Demand panel
+    this.drawDemandPanel(state);
+    // Coal panel
+    this.drawResourcePanel('coalPanel', 'COAL', state.coalMarket, '#555', '#aaa', slotPrices);
+    // Iron panel
+    this.drawResourcePanel('ironPanel', 'IRON', state.ironMarket, '#d4740e', '#ffc080', slotPrices);
+  },
+
+  drawDemandPanel(state) {
+    const pos = this.getMarketPos('demandPanel');
     const demand = state.distantMarketDemand;
+    const w = 24, h = 180;
 
-    // Demand track position on the board (right side, "Cotton Demand" area)
-    // Track goes from top (demand=8) to bottom (demand=0)
-    const trackX = 573;
-    const trackTop = 310;
-    const trackBottom = 470;
-    const step = (trackBottom - trackTop) / 8;
-
-    // Draw track background
-    this.createAndAppend('rect', {
-      x: trackX - 12, y: trackTop - 8,
-      width: 24, height: trackBottom - trackTop + 16,
-      rx: 3, fill: '#00000066', stroke: '#88888844', 'stroke-width': 0.5
+    // Background (draggable)
+    const bg = this.createAndAppend('rect', {
+      x: pos.x - w/2, y: pos.y - h/2 - 10,
+      width: w, height: h + 20,
+      rx: 3, fill: '#00000077', stroke: this.editMode ? '#ffcc00' : '#88888844', 'stroke-width': this.editMode ? 1.5 : 0.5
     });
+    bg.addEventListener('mousedown', (e) => this.onDragStart(e, 'demandPanel', 'market'));
 
-    // Draw scale labels
-    for (let i = 0; i <= 8; i++) {
-      const y = trackTop + i * step;
-      this.createAndAppend('text', {
-        x: trackX - 16, y: y + 3,
-        'text-anchor': 'end', 'font-size': '7', fill: '#888',
-        'pointer-events': 'none'
-      }).textContent = 8 - i;
-    }
-
-    // Draw marker at current demand
-    const markerY = trackTop + (8 - demand) * step;
-    this.createAndAppend('circle', {
-      cx: trackX, cy: markerY, r: 7,
-      fill: '#e94560', stroke: '#fff', 'stroke-width': 1.5
-    });
-    this.createAndAppend('text', {
-      x: trackX, y: markerY + 3,
-      'text-anchor': 'middle', 'font-size': '8', fill: '#fff',
-      'font-weight': 'bold', 'pointer-events': 'none'
-    }).textContent = demand;
+    const step = h / 8;
+    const top = pos.y - h/2;
 
     // Label
     this.createAndAppend('text', {
-      x: trackX, y: trackTop - 14,
-      'text-anchor': 'middle', 'font-size': '7', fill: '#e94560',
+      x: pos.x, y: top - 6,
+      'text-anchor': 'middle', 'font-size': '6', fill: '#e94560',
       'font-weight': 'bold', 'pointer-events': 'none'
     }).textContent = 'DEMAND';
+
+    // Scale
+    for (let i = 0; i <= 8; i++) {
+      const y = top + i * step;
+      this.createAndAppend('text', {
+        x: pos.x - 14, y: y + 3,
+        'text-anchor': 'end', 'font-size': '6', fill: '#888', 'pointer-events': 'none'
+      }).textContent = 8 - i;
+    }
+
+    // Marker
+    const markerY = top + (8 - demand) * step;
+    this.createAndAppend('circle', {
+      cx: pos.x, cy: markerY, r: 6,
+      fill: '#e94560', stroke: '#fff', 'stroke-width': 1.5
+    });
+    this.createAndAppend('text', {
+      x: pos.x, y: markerY + 3,
+      'text-anchor': 'middle', 'font-size': '7', fill: '#fff',
+      'font-weight': 'bold', 'pointer-events': 'none'
+    }).textContent = demand;
+  },
+
+  drawResourcePanel(panelId, label, cubes, cubeColor, textColor, slotPrices) {
+    const pos = this.getMarketPos(panelId);
+    const slotW = 11, slotH = 11, gap = 2;
+    const totalW = 8 * (slotW + gap) + 30;
+
+    // Background (draggable)
+    const bg = this.createAndAppend('rect', {
+      x: pos.x - 4, y: pos.y - 10,
+      width: totalW, height: 26,
+      rx: 3, fill: '#00000077', stroke: this.editMode ? '#ffcc00' : '#88888844', 'stroke-width': this.editMode ? 1.5 : 0.5
+    });
+    bg.addEventListener('mousedown', (e) => this.onDragStart(e, panelId, 'market'));
+
+    // Label
+    this.createAndAppend('text', {
+      x: pos.x, y: pos.y + 4,
+      'text-anchor': 'start', 'font-size': '7', fill: textColor,
+      'font-weight': 'bold', 'pointer-events': 'none'
+    }).textContent = label;
+
+    // Slots (left=cheapest £1, right=most expensive £4)
+    const startX = pos.x + 26;
+    for (let i = 0; i < 8; i++) {
+      const sx = startX + i * (slotW + gap);
+      const filled = i < cubes; // slots fill from left (cheapest)
+      const price = slotPrices[i];
+
+      // Slot box
+      this.createAndAppend('rect', {
+        x: sx, y: pos.y - 5,
+        width: slotW, height: slotH,
+        rx: 1,
+        fill: filled ? cubeColor : '#222',
+        stroke: '#666', 'stroke-width': 0.5
+      });
+
+      // Price label below
+      this.createAndAppend('text', {
+        x: sx + slotW/2, y: pos.y + 12,
+        'text-anchor': 'middle', 'font-size': '5', fill: '#888',
+        'pointer-events': 'none'
+      }).textContent = '£' + price;
+    }
   },
 
   drawLocations() {
@@ -427,7 +492,8 @@ const BoardRenderer = {
     const pt = this.svgPoint(e);
     const source = nodeType === 'location' ? BOARD.locations[nodeId]
       : nodeType === 'nonBuildable' ? BOARD.nonBuildable[nodeId]
-      : BOARD.externalPorts[nodeId];
+      : nodeType === 'market' ? this.getMarketPos(nodeId)
+      : null;
     if (!source) return;
     this.dragging = { id: nodeId, type: nodeType };
     this.dragOffset = { x: pt.x - source.x, y: pt.y - source.y };
@@ -446,9 +512,9 @@ const BoardRenderer = {
     } else if (d.type === 'nonBuildable' && BOARD.nonBuildable[d.id]) {
       BOARD.nonBuildable[d.id].x = newX;
       BOARD.nonBuildable[d.id].y = newY;
-    } else if (d.type === 'externalPort' && BOARD.externalPorts[d.id]) {
-      BOARD.externalPorts[d.id].x = newX;
-      BOARD.externalPorts[d.id].y = newY;
+    } else if (d.type === 'market') {
+      // Market panels: update defaults so getMarketPos picks them up
+      this.marketDefaults[d.id] = { x: newX, y: newY };
     }
 
     this.customPositions[d.id] = { x: newX, y: newY };

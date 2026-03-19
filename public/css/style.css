@@ -125,7 +125,7 @@ a:hover { text-decoration: underline; }
 
 /* Game layout */
 .game-container { display: flex; flex-direction: column; height: calc(100vh - 45px); }
-.game-main { display: flex; flex: 1; overflow: hidden; }
+.game-main { display: flex; flex: 1; overflow: hidden; position: relative; }
 
 /* Left panel: players + info + markets */
 .left-panel {
@@ -264,6 +264,7 @@ a:hover { text-decoration: underline; }
 .market-fill.coal { background: #555; }
 .market-fill.iron { background: #d4740e; }
 .market-fill.demand { background: var(--accent); }
+.market-price { font-weight: bold; font-size: 10px; color: var(--gold); }
 .market-detail { display: flex; justify-content: space-between; font-size: 9px; margin-top: 2px; }
 
 /* Actions */
@@ -312,9 +313,23 @@ a:hover { text-decoration: underline; }
 .mat-level-info { color: var(--text-muted); }
 .mat-level-row.top-tile { background: #ffffff0a; }
 
-/* Action hints on card hover */
-.action-hints { margin-top: 6px; font-size: 10px; }
-.action-hint { padding: 2px 0; color: var(--text-muted); }
+/* Floating action hints (overlaps map, left of right panel) */
+.action-hints-float {
+  position: absolute;
+  right: 258px; /* just left of the right panel */
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(15, 20, 35, 0.92);
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 8px 12px;
+  z-index: 20;
+  min-width: 180px;
+  max-width: 220px;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.action-hint { padding: 3px 0; color: var(--text-muted); font-size: 10px; }
 .action-hint strong { color: var(--text); }
 
 /* Collapsible Log */

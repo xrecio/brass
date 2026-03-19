@@ -108,26 +108,29 @@ const GameUI = {
   updateMarkets() {
     const panel = document.getElementById('market-panel');
     const s = gameState;
+    const slotPrices = [1, 1, 2, 2, 3, 3, 4, 4];
+    const coalPrice = s.coalMarket > 0 ? slotPrices[s.coalMarket - 1] : 5;
+    const ironPrice = s.ironMarket > 0 ? slotPrices[s.ironMarket - 1] : 5;
     const tilesLeft = s.distantMarketTiles ? s.distantMarketTiles.length : 0;
     const flipped = s.distantMarketFlipped || [];
     panel.innerHTML = `
       <h4>Markets</h4>
       <div class="market-row">
-        <span>Coal: ${s.coalMarket}/13</span>
-        <div class="market-bar"><div class="market-fill coal" style="width:${s.coalMarket/13*100}%"></div></div>
+        <span>Coal: ${s.coalMarket}/8</span>
+        <span class="market-price">£${coalPrice}/cube</span>
       </div>
+      <div class="market-bar"><div class="market-fill coal" style="width:${s.coalMarket/8*100}%"></div></div>
       <div class="market-row">
-        <span>Iron: ${s.ironMarket}/12</span>
-        <div class="market-bar"><div class="market-fill iron" style="width:${s.ironMarket/12*100}%"></div></div>
+        <span>Iron: ${s.ironMarket}/8</span>
+        <span class="market-price">£${ironPrice}/cube</span>
       </div>
+      <div class="market-bar"><div class="market-fill iron" style="width:${s.ironMarket/8*100}%"></div></div>
       <div class="market-row">
         <span>Demand: ${s.distantMarketDemand}/8</span>
-        <div class="market-bar"><div class="market-fill demand" style="width:${s.distantMarketDemand/8*100}%"></div></div>
+        <span class="market-price">${tilesLeft} tiles</span>
       </div>
-      <div class="market-detail">
-        <span class="muted">${tilesLeft} tiles left</span>
-        ${flipped.length > 0 ? `<span class="muted">Flipped: ${flipped.map(t => t === 0 ? '0' : t).join(', ')}</span>` : ''}
-      </div>
+      <div class="market-bar"><div class="market-fill demand" style="width:${s.distantMarketDemand/8*100}%"></div></div>
+      ${flipped.length > 0 ? `<div class="market-detail"><span class="muted">Flipped: ${flipped.map(t => t === 0 ? '0' : t).join(', ')}</span></div>` : ''}
     `;
   },
 
@@ -553,13 +556,12 @@ const GameUI = {
   },
 
   showActionHints(cardId, info) {
-    let existing = document.getElementById('action-hints');
+    let existing = document.getElementById('action-hints-float');
     if (!existing) {
       existing = document.createElement('div');
-      existing.id = 'action-hints';
-      existing.className = 'action-hints';
-      const actionPanel = document.getElementById('action-panel');
-      if (actionPanel) actionPanel.appendChild(existing);
+      existing.id = 'action-hints-float';
+      existing.className = 'action-hints-float';
+      document.querySelector('.game-main').appendChild(existing);
     }
     const hints = [];
     const myPlayer = gameState.players.find(p => p.userId === USER_ID);
@@ -584,7 +586,7 @@ const GameUI = {
   },
 
   hideActionHints() {
-    const el = document.getElementById('action-hints');
+    const el = document.getElementById('action-hints-float');
     if (el) el.remove();
   },
 
