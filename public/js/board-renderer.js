@@ -875,7 +875,7 @@ const BoardRenderer = {
           x: cx, y: cy + 2.5,
           'text-anchor': 'middle',
           'font-size': isDual ? '5' : '6',
-          fill: '#ffffff88',
+          fill: '#8b7355aa',
           'pointer-events': 'none'
         }).textContent = allowed.map(t => BOARD.industryIcons[t] || '?').join('/');
       }
