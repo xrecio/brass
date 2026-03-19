@@ -323,15 +323,29 @@ const BoardRenderer = {
     const step = h / 8;
     const top = pos.y - h/2;
 
-    // Scale with income circles
+    // Scale with income circles — highlight current demand level
     for (let i = 0; i <= 8; i++) {
       const y = top + i * step;
       const level = 8 - i;
+      const isCurrent = level === demand;
+
+      // Highlight background for current level
+      if (isCurrent) {
+        this.createAndAppend('rect', {
+          x: pos.x - w/2 + 1, y: y - 7,
+          width: w - 2, height: 14, rx: 2,
+          fill: '#e9456033', stroke: '#e94560', 'stroke-width': 0.8
+        });
+      }
 
       // Demand number
       this.createAndAppend('text', {
         x: pos.x - 8, y: y + 3,
-        'text-anchor': 'end', 'font-size': '6', fill: '#888', 'pointer-events': 'none'
+        'text-anchor': 'end',
+        'font-size': isCurrent ? '8' : '6',
+        fill: isCurrent ? '#fff' : '#888',
+        'font-weight': isCurrent ? 'bold' : 'normal',
+        'pointer-events': 'none'
       }).textContent = level;
 
       // Income circle (for levels 1-8)
@@ -350,19 +364,16 @@ const BoardRenderer = {
           'font-weight': 'bold', 'pointer-events': 'none'
         }).textContent = '+' + inc;
       }
-    }
 
-    // Marker
-    const markerY = top + (8 - demand) * step;
-    this.createAndAppend('circle', {
-      cx: pos.x - 3, cy: markerY, r: 6,
-      fill: '#e94560', stroke: '#fff', 'stroke-width': 1.5
-    });
-    this.createAndAppend('text', {
-      x: pos.x - 3, y: markerY + 3,
-      'text-anchor': 'middle', 'font-size': '7', fill: '#fff',
-      'font-weight': 'bold', 'pointer-events': 'none'
-    }).textContent = demand;
+      // "No more demand" label at level 0
+      if (level === 0) {
+        this.createAndAppend('text', {
+          x: pos.x + w/2 + 3, y: y + 3,
+          'text-anchor': 'start', 'font-size': '4', fill: '#e94560',
+          'font-style': 'italic', 'pointer-events': 'none'
+        }).textContent = 'No more demand';
+      }
+    }
     this.endScaledGroup();
   },
 
