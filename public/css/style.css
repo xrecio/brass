@@ -348,7 +348,10 @@ a:hover { text-decoration: underline; }
   z-index: 30;
   box-shadow: 0 4px 20px rgba(0,0,0,0.6);
   max-width: 90vw;
-  overflow: visible;
+  resize: both;
+  overflow: auto;
+  min-width: 140px;
+  min-height: 60px;
 }
 .floating-hand-header { cursor: move; }
 .float-check {
