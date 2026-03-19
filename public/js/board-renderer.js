@@ -359,7 +359,7 @@ const BoardRenderer = {
           fill: incFill, stroke: incStroke, 'stroke-width': minimal ? 0.8 : 0
         });
         this.createAndAppend('text', {
-          x: pos.x + 10, y: y + 1.8,
+          x: pos.x + 10, y: y,
           'text-anchor': 'middle', 'dominant-baseline': 'central',
           'font-size': '5', fill: incTextFill,
           'font-weight': 'bold', 'pointer-events': 'none'
