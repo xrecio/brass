@@ -34,6 +34,13 @@ const GameUI = {
       if (res.status === 304) return;
       if (!res.ok) return;
       const data = await res.json();
+      if (data.state && data.state.incompatible) {
+        document.querySelector('.game-container').innerHTML =
+          '<div style="text-align:center;padding:80px 20px"><h2 style="color:#e94560">Game No Longer Playable</h2>' +
+          '<p>This game was created with an older version that is no longer compatible.</p>' +
+          '<a href="/lobby" class="btn btn-primary" style="margin-top:16px">Back to Lobby</a></div>';
+        return;
+      }
       gameState = data.state;
       stateVersion = data.version;
       this.updateAll();

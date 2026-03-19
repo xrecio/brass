@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brass: Lancashire - Incompatible Game</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/lobby" class="nav-brand">Brass: Lancashire</a>
+    <div class="nav-links">
+      <a href="/wiki" class="nav-link">Wiki</a>
+      <span class="nav-user"><%= user.username %></span>
+    </div>
+  </nav>
+  <main class="container">
+    <div class="incompatible-notice">
+      <h2>Game No Longer Playable</h2>
+      <p>This game (<strong><%= game.name %></strong>) was created with version <strong><%= gameVersion %></strong>, which is not compatible with the current version <strong><%= currentVersion %></strong>.</p>
+      <p>The game rules or data structure changed in a way that makes it impossible to continue this game. Please start a new game.</p>
+      <a href="/lobby" class="btn btn-primary">Back to Lobby</a>
+    </div>
+  </main>
+</body>
+</html>

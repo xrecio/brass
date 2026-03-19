@@ -2,6 +2,7 @@ const express = require('express');
 const { requireLogin, requireLoginAPI } = require('../lib/auth');
 const { applyAction, getValidActions } = require('../lib/game-engine');
 const db = require('../lib/db');
+const { APP_VERSION, isCompatible } = require('../lib/version');
 const router = express.Router();
 
 router.get('/games/:id', requireLogin, (req, res) => {
@@ -16,12 +17,24 @@ router.get('/games/:id', requireLogin, (req, res) => {
   const gs = db.getGameState(gameId);
   if (!gs) return res.redirect('/lobby');
 
+  const state = JSON.parse(gs.state);
+  const gameVersion = state.gameStateVersion || 0;
+
+  if (!isCompatible(gameVersion)) {
+    return res.render('game-incompatible', {
+      game,
+      gameVersion: state.appVersion || 'unknown',
+      currentVersion: APP_VERSION
+    });
+  }
+
   res.render('game', {
     game,
-    state: JSON.parse(gs.state),
+    state,
     version: gs.version,
     userId,
-    isMember
+    isMember,
+    appVersion: APP_VERSION
   });
 });
 
@@ -38,6 +51,9 @@ router.get('/api/games/:id/state', requireLoginAPI, (req, res) => {
   }
 
   const state = JSON.parse(gs.state);
+  if (!isCompatible(state.gameStateVersion || 0)) {
+    return res.json({ state: { ...state, incompatible: true }, version: gs.version });
+  }
   const userId = req.session.user.id;
   const sanitized = sanitizeState(state, userId);
 
@@ -54,6 +70,9 @@ router.post('/api/games/:id/action', requireLoginAPI, (req, res) => {
   if (!gs) return res.status(404).json({ error: 'Game not found' });
 
   const state = JSON.parse(gs.state);
+  if (!isCompatible(state.gameStateVersion || 0)) {
+    return res.status(400).json({ error: 'This game was created with an older version and is no longer playable.' });
+  }
   const result = applyAction(state, userId, action);
 
   if (result.error) {

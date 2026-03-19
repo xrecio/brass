@@ -112,6 +112,16 @@ a:hover { text-decoration: underline; }
 .badge-waiting { background: var(--warning); color: #000; }
 .badge-active { background: var(--success); color: #000; }
 .badge-finished { background: var(--text-muted); }
+.badge-version { background: var(--surface-light); color: var(--text-muted); font-family: monospace; }
+.badge-incompatible { background: #5a1a1a; color: var(--accent); text-decoration: line-through; }
+
+.incompatible-notice {
+  max-width: 500px; margin: 80px auto; text-align: center;
+  background: var(--bg-light); padding: 30px; border-radius: 10px;
+  border: 1px solid #5a1a1a;
+}
+.incompatible-notice h2 { color: var(--accent); margin-bottom: 16px; }
+.incompatible-notice p { margin-bottom: 12px; line-height: 1.5; }
 
 /* Game layout */
 .game-container { display: flex; flex-direction: column; height: calc(100vh - 45px); }

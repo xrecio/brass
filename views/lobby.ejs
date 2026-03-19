@@ -61,9 +61,14 @@
             <span class="badge badge-<%= game.status %>"><%= game.status %></span>
             <span class="muted"><%= game.player_count %>/<%= game.num_players %> players</span>
             <span class="muted">by <%= game.creator_name %></span>
+            <% if (game.gameAppVersion) { %>
+              <span class="badge badge-version<%= game.compatible ? '' : ' badge-incompatible' %>">v<%= game.gameAppVersion %></span>
+            <% } %>
           </div>
           <div class="game-actions">
-            <% if (game.status === 'active' && game.is_member) { %>
+            <% if (!game.compatible && game.status === 'active') { %>
+              <span class="muted" style="color: var(--accent)">Incompatible version</span>
+            <% } else if (game.status === 'active' && game.is_member) { %>
               <a href="/games/<%= game.id %>" class="btn btn-primary">Play</a>
             <% } else if (game.status === 'active') { %>
               <a href="/games/<%= game.id %>" class="btn">Watch</a>
@@ -84,6 +89,7 @@
         </div>
       <% } %>
     </div>
+    <p class="muted" style="margin-top: 24px; text-align: center">Brass: Lancashire v<%= appVersion %></p>
   </main>
 </body>
 </html>

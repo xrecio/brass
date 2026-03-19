@@ -3,6 +3,7 @@ const { requireLogin } = require('../lib/auth');
 const { createInitialState } = require('../lib/game-setup');
 const { playerColorNames } = require('../lib/industry-data');
 const db = require('../lib/db');
+const { APP_VERSION, isCompatible } = require('../lib/version');
 const router = express.Router();
 
 router.get('/lobby', requireLogin, (req, res) => {
@@ -13,15 +14,25 @@ router.get('/lobby', requireLogin, (req, res) => {
   const games = allGames.map(g => {
     const players = db.getGamePlayers(g.id);
     const creator = db.findUserById(g.created_by);
+    const gs = db.getGameState(g.id);
+    let gameAppVersion = null;
+    let compatible = true;
+    if (gs) {
+      const state = JSON.parse(gs.state);
+      gameAppVersion = state.appVersion || null;
+      compatible = isCompatible(state.gameStateVersion || 0);
+    }
     return {
       ...g,
       player_count: players.length,
       is_member: players.some(p => p.user_id === userId),
-      creator_name: creator ? creator.username : 'Unknown'
+      creator_name: creator ? creator.username : 'Unknown',
+      gameAppVersion,
+      compatible
     };
   }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-  res.render('lobby', { games });
+  res.render('lobby', { games, appVersion: APP_VERSION });
 });
 
 router.post('/games/create', requireLogin, (req, res) => {
