@@ -447,8 +447,8 @@ a:hover { text-decoration: underline; }
 body.minimal-mode .tile-vp-hex,
 body.minimal-mode .tile-vp-inline {
   background: transparent; color: #cc3366; clip-path: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 15'%3E%3Cpolygon points='8,0.5 15.5,3.75 15.5,11.25 8,14.5 0.5,11.25 0.5,3.75' fill='none' stroke='%23cc3366' stroke-width='1.2'/%3E%3C/svg%3E");
-  background-size: contain; background-repeat: no-repeat; background-position: center;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 15'%3E%3Cpolygon points='8,0.5 15.5,3.75 15.5,11.25 8,14.5 0.5,11.25 0.5,3.75' fill='none' stroke='%23cc3366' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 100% 100%; background-repeat: no-repeat;
 }
 body.minimal-mode .tile-inc-circle { background: transparent; color: #e08030; border: 1.5px solid #e08030; }
 body.minimal-mode .money-disc.silver { background: transparent; color: #C0C0C0; border-color: #C0C0C0; }
