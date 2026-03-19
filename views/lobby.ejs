@@ -84,16 +84,35 @@
                   <span class="muted" style="color: var(--accent)">Incompatible version</span>
                 <% } else if (game.status === 'active') { %>
                   <a href="/games/<%= game.id %>" class="btn btn-primary">Play</a>
+                <% } else if (game.status === 'waiting' && game.is_invited) { %>
+                  <form method="POST" action="/games/<%= game.id %>/accept-invite" style="display:inline">
+                    <button type="submit" class="btn btn-primary">Join</button>
+                  </form>
                 <% } else if (game.status === 'waiting') { %>
-                  <% if (game.created_by === user.id && game.player_count >= 3) { %>
+                  <a href="/games/<%= game.id %>" class="btn">Enter</a>
+                  <% if (game.is_creator && game.player_count >= 3) { %>
                     <form method="POST" action="/games/<%= game.id %>/start" style="display:inline">
-                      <button type="submit" class="btn btn-primary">Start Game</button>
+                      <button type="submit" class="btn btn-primary">Start</button>
                     </form>
-                  <% } else { %>
-                    <span class="muted">Waiting for players...</span>
                   <% } %>
                 <% } %>
+                <% if (game.is_creator) { %>
+                  <form method="POST" action="/games/<%= game.id %>/delete" style="display:inline" onsubmit="return confirm('Delete this game?')">
+                    <button type="submit" class="btn btn-sm" style="color:var(--accent)" title="Delete game">🗑</button>
+                  </form>
+                <% } %>
               </div>
+              <% if (game.status === 'waiting' && game.is_creator) { %>
+              <div style="margin-top:4px;display:flex;gap:4px;align-items:center;font-size:10px">
+                <form method="POST" action="/games/<%= game.id %>/invite" style="display:flex;gap:4px;align-items:center">
+                  <input type="text" name="username" placeholder="Invite user..." style="width:100px;padding:2px 4px;font-size:10px">
+                  <button type="submit" class="btn btn-sm">Invite</button>
+                </form>
+                <% if (game.invited_names && game.invited_names.length > 0) { %>
+                  <span class="muted">Invited: <%= game.invited_names.join(', ') %></span>
+                <% } %>
+              </div>
+              <% } %>
             </div>
           <% } %>
         </div>

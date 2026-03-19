@@ -12,10 +12,13 @@ router.get('/lobby', requireLogin, (req, res) => {
   const allGames = db.findGames({});
   const allUsers = db.get().users.filter(u => !u.is_bot);
 
-  // Only show games where user is a member
+  // Show games where user is a member OR invited
+  const myInvites = db.getInvitesForUser(userId);
+  const invitedGameIds = myInvites.map(i => i.game_id);
+
   const myGames = allGames.filter(g => {
     if (g.status === 'finished') return false;
-    return db.isGameMember(g.id, userId);
+    return db.isGameMember(g.id, userId) || invitedGameIds.includes(g.id);
   }).map(g => {
     const players = db.getGamePlayers(g.id);
     const creator = db.findUserById(g.created_by);
@@ -27,10 +30,17 @@ router.get('/lobby', requireLogin, (req, res) => {
       gameAppVersion = state.appVersion || null;
       compatible = isCompatible(state.gameStateVersion || 0);
     }
+    const isMember = db.isGameMember(g.id, userId);
+    const isInvited = !isMember && invitedGameIds.includes(g.id);
+    const invites = db.getInvitesForGame(g.id);
+    const invitedNames = invites.map(i => { const u = db.findUserById(i.user_id); return u ? u.username : '?'; });
     return {
       ...g,
       player_count: players.length,
-      is_member: true,
+      is_member: isMember,
+      is_invited: isInvited,
+      is_creator: g.created_by === userId,
+      invited_names: invitedNames,
       creator_name: creator ? creator.username : 'Unknown',
       gameAppVersion,
       compatible
@@ -124,6 +134,44 @@ router.post('/games/:id/join', requireLogin, (req, res) => {
   const seat = players.length;
   db.addGamePlayer(gameId, userId, seat, playerColorNames[seat]);
 
+  res.redirect('/lobby');
+});
+
+// Invite a user to a game
+router.post('/games/:id/invite', requireLogin, (req, res) => {
+  const gameId = parseInt(req.params.id);
+  const game = db.findGame(gameId);
+  if (!game || game.status !== 'waiting' || game.created_by !== req.session.user.id) {
+    return res.redirect('/lobby');
+  }
+  const username = (req.body.username || '').trim();
+  if (username) db.inviteToGame(gameId, username);
+  res.redirect('/lobby');
+});
+
+// Accept invite and join game
+router.post('/games/:id/accept-invite', requireLogin, (req, res) => {
+  const userId = req.session.user.id;
+  const gameId = parseInt(req.params.id);
+  const game = db.findGame(gameId);
+  if (!game || game.status !== 'waiting') return res.redirect('/lobby');
+
+  const players = db.getGamePlayers(gameId);
+  if (players.length >= game.num_players) return res.redirect('/lobby');
+  if (players.some(p => p.user_id === userId)) return res.redirect('/lobby');
+
+  const seat = players.length;
+  db.addGamePlayer(gameId, userId, seat, playerColorNames[seat]);
+  db.removeInvite(gameId, userId);
+  res.redirect('/lobby');
+});
+
+// Delete game (creator only, with confirmation via hidden field)
+router.post('/games/:id/delete', requireLogin, (req, res) => {
+  const gameId = parseInt(req.params.id);
+  const game = db.findGame(gameId);
+  if (!game || game.created_by !== req.session.user.id) return res.redirect('/lobby');
+  db.deleteGame(gameId);
   res.redirect('/lobby');
 });
 
