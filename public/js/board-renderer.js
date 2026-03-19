@@ -504,7 +504,7 @@ const BoardRenderer = {
       const seat = state.turnOrder[i];
       const p = state.players[seat];
       const spent = p.spentThisRound || 0;
-      const y = pos.y + 8 + i * rowH;
+      const y = pos.y + 12 + i * rowH;
 
       // Player color square
       this.createAndAppend('rect', {
@@ -582,11 +582,15 @@ const BoardRenderer = {
         'font-weight': 'bold', 'pointer-events': 'none'
       }).textContent = p.vp;
       // Name below
+      // Name centered between hexagon bottom and panel bottom
+      const hexBottom = pos.y + 18 + 9; // hcy + hr
+      const panelBottom = pos.y - 6 + panelH;
+      const nameY = (hexBottom + panelBottom) / 2;
       this.createAndAppend('text', {
-        x: cx, y: pos.y + 32,
-        'text-anchor': 'middle', 'font-size': '4', fill: '#aaa',
-        'pointer-events': 'none'
-      }).textContent = (p.username || '').substring(0, 6);
+        x: cx, y: nameY,
+        'text-anchor': 'middle', 'dominant-baseline': 'central',
+        'font-size': '4', fill: '#aaa', 'pointer-events': 'none'
+      }).textContent = (p.username || '').substring(0, 8);
     }
     this.endScaledGroup();
   },
