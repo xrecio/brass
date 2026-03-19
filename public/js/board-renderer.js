@@ -9,17 +9,20 @@ const BoardRenderer = {
   showLinks: true,
   dragging: null,
   dragOffset: { x: 0, y: 0 },
-  customPositions: {},  // locId -> {x, y}
+  customPositions: {},  // locId -> {x, y, scale}
+  positionHistory: [],  // stack of previous customPositions snapshots
   saveTimeout: null,
 
   init() {
     this.svg = document.getElementById('game-board');
 
-    // Load saved positions
+    // Load saved positions: user's own, or fall back to xai's
     if (typeof CUSTOM_POSITIONS === 'object' && CUSTOM_POSITIONS !== null) {
       this.customPositions = CUSTOM_POSITIONS;
-      this.applyCustomPositions();
+    } else if (typeof XAI_POSITIONS === 'object' && XAI_POSITIONS !== null) {
+      this.customPositions = JSON.parse(JSON.stringify(XAI_POSITIONS));
     }
+    this.applyCustomPositions();
 
     // SVG drag handlers
     this.svg.addEventListener('mousemove', (e) => this.onDragMove(e));
@@ -893,7 +896,15 @@ const BoardRenderer = {
     this.saveTimeout = setTimeout(() => this.savePositions(), 2000);
   },
 
+  pushHistory() {
+    // Save current state before making changes
+    this.positionHistory.push(JSON.stringify(this.customPositions));
+    // Keep max 50 history entries
+    if (this.positionHistory.length > 50) this.positionHistory.shift();
+  },
+
   async savePositions() {
+    this.pushHistory();
     if (Object.keys(this.customPositions).length === 0) return;
     try {
       await fetch('/api/user/node-positions', {
@@ -907,8 +918,19 @@ const BoardRenderer = {
   },
 
   async resetPositions() {
-    this.customPositions = {};
-    // Reset BOARD data to defaults
+    if (this.positionHistory.length > 0) {
+      // Undo: restore previous state
+      this.customPositions = JSON.parse(this.positionHistory.pop());
+    } else {
+      // No history: fall back to xai's config (or factory defaults)
+      if (typeof XAI_POSITIONS === 'object' && XAI_POSITIONS !== null) {
+        this.customPositions = JSON.parse(JSON.stringify(XAI_POSITIONS));
+      } else {
+        this.customPositions = {};
+      }
+    }
+    // Apply to BOARD data
+    // First reset to factory defaults
     for (const [locId, loc] of Object.entries(BOARD_DEFAULTS.locations)) {
       BOARD.locations[locId].x = loc.x;
       BOARD.locations[locId].y = loc.y;
@@ -917,9 +939,26 @@ const BoardRenderer = {
       BOARD.nonBuildable[id].x = wp.x;
       BOARD.nonBuildable[id].y = wp.y;
     }
+    // Then apply current customPositions on top
+    this.applyCustomPositions();
+    // Also update market panel defaults
+    for (const id of Object.keys(this.marketDefaults)) {
+      if (this.customPositions[id]) {
+        this.marketDefaults[id] = { x: this.customPositions[id].x, y: this.customPositions[id].y };
+      }
+    }
     this.render();
+    // Save to server
     try {
-      await fetch('/api/user/node-positions', { method: 'DELETE' });
+      if (Object.keys(this.customPositions).length > 0) {
+        await fetch('/api/user/node-positions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.customPositions)
+        });
+      } else {
+        await fetch('/api/user/node-positions', { method: 'DELETE' });
+      }
     } catch (e) {}
   }
 };

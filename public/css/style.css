@@ -444,10 +444,24 @@ a:hover { text-decoration: underline; }
 .tile-inc-inline { width: 16px; height: 16px; font-size: 7px; vertical-align: middle; }
 
 /* Minimal mode: transparent backgrounds, only colored borders */
-body.minimal-mode .tile-vp-hex { background: transparent; color: #cc3366; }
+body.minimal-mode .tile-vp-hex {
+  background: transparent; color: #cc3366;
+  /* clip-path removes border, so use outline + drop-shadow instead */
+  clip-path: none;
+  border-radius: 2px;
+  border: 1.5px solid #cc3366;
+  width: auto; height: auto;
+  padding: 0 2px;
+}
+body.minimal-mode .tile-vp-inline {
+  clip-path: none;
+  border-radius: 2px;
+  border: 1.5px solid #cc3366;
+  padding: 0 3px;
+}
 body.minimal-mode .tile-inc-circle { background: transparent; color: #e08030; border: 1.5px solid #e08030; }
-body.minimal-mode .money-disc.silver { background: transparent; color: #C0C0C0; }
-body.minimal-mode .money-disc.bronze { background: transparent; color: #CD7F32; }
+body.minimal-mode .money-disc.silver { background: transparent; color: #C0C0C0; border-color: #C0C0C0; }
+body.minimal-mode .money-disc.bronze { background: transparent; color: #CD7F32; border-color: #CD7F32; }
 
 /* Out of game section */
 .mat-outofgame { margin-top: 6px; padding-top: 4px; border-top: 1px solid #333; }

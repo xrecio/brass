@@ -31,6 +31,11 @@ router.get('/games/:id', requireLogin, (req, res) => {
   const prefs = db.getUserPrefs(userId);
   const customPositions = prefs.nodePositions || null;
 
+  // Get xai's positions as the baseline defaults
+  const xaiUser = db.findUserByUsername('xai');
+  const xaiPrefs = xaiUser ? db.getUserPrefs(xaiUser.id) : {};
+  const xaiPositions = xaiPrefs.nodePositions || null;
+
   res.render('game', {
     game,
     state,
@@ -38,7 +43,8 @@ router.get('/games/:id', requireLogin, (req, res) => {
     userId,
     isMember,
     appVersion: APP_VERSION,
-    customPositions: JSON.stringify(customPositions)
+    customPositions: JSON.stringify(customPositions),
+    xaiPositions: JSON.stringify(xaiPositions)
   });
 });
 
