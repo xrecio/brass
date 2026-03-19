@@ -683,36 +683,37 @@ const BoardRenderer = {
       }
     }
 
-    // Serpentine arrows at row ends
-    const arrowSize = 2;
-    for (let row = 0; row < rows; row++) {
-      const by = startY + row * (boxSize + gap) + boxSize / 2;
-      const leftX = pos.x - arrowSize - 1;
-      const rightX = pos.x + cols * (boxSize + gap) - gap + 1;
+    // Serpentine U-turn arrows at row ends
+    const r = 3; // curve radius
+    for (let row = 0; row < rows - 1; row++) {
+      const by1 = startY + row * (boxSize + gap) + boxSize / 2;
+      const by2 = startY + (row + 1) * (boxSize + gap) + boxSize / 2;
+      const midY = (by1 + by2) / 2;
 
-      if (row < rows - 1) {
-        if (row % 2 === 0) {
-          // Left-to-right row: right arrow then down arrow
-          this.createAndAppend('text', {
-            x: rightX, y: by, 'text-anchor': 'start', 'dominant-baseline': 'central',
-            'font-size': '4', fill: '#555', 'pointer-events': 'none'
-          }).textContent = '→';
-          this.createAndAppend('text', {
-            x: rightX, y: by + (boxSize + gap) / 2, 'text-anchor': 'start', 'dominant-baseline': 'central',
-            'font-size': '4', fill: '#555', 'pointer-events': 'none'
-          }).textContent = '↓';
-        } else {
-          // Right-to-left row: left arrow then down arrow
-          this.createAndAppend('text', {
-            x: leftX, y: by, 'text-anchor': 'end', 'dominant-baseline': 'central',
-            'font-size': '4', fill: '#555', 'pointer-events': 'none'
-          }).textContent = '←';
-          this.createAndAppend('text', {
-            x: leftX, y: by + (boxSize + gap) / 2, 'text-anchor': 'end', 'dominant-baseline': 'central',
-            'font-size': '4', fill: '#555', 'pointer-events': 'none'
-          }).textContent = '↓';
-        }
+      if (row % 2 === 0) {
+        // Turn at right side
+        const tx = pos.x + cols * (boxSize + gap) - gap + 2;
+        this.createAndAppend('path', {
+          d: 'M ' + tx + ' ' + by1 + ' C ' + (tx + r*2) + ' ' + by1 + ' ' + (tx + r*2) + ' ' + by2 + ' ' + tx + ' ' + by2,
+          fill: 'none', stroke: '#55555588', 'stroke-width': 0.6,
+          'marker-end': 'url(#arrowhead)', 'pointer-events': 'none'
+        });
+      } else {
+        // Turn at left side
+        const tx = pos.x - 2;
+        this.createAndAppend('path', {
+          d: 'M ' + tx + ' ' + by1 + ' C ' + (tx - r*2) + ' ' + by1 + ' ' + (tx - r*2) + ' ' + by2 + ' ' + tx + ' ' + by2,
+          fill: 'none', stroke: '#55555588', 'stroke-width': 0.6,
+          'marker-end': 'url(#arrowhead)', 'pointer-events': 'none'
+        });
       }
+    }
+
+    // Define arrowhead marker (if not already)
+    if (!this.svg.querySelector('#arrowhead')) {
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      defs.innerHTML = '<marker id="arrowhead" markerWidth="4" markerHeight="3" refX="4" refY="1.5" orient="auto"><polygon points="0,0 4,1.5 0,3" fill="#55555588"/></marker>';
+      this.svg.insertBefore(defs, this.svg.firstChild);
     }
 
     this.endScaledGroup();
