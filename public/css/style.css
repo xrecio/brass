@@ -184,6 +184,8 @@ a:hover { text-decoration: underline; }
   gap: 4px;
 }
 .board-controls label { display: flex; align-items: center; gap: 4px; cursor: default; }
+.board-control-sep { color: #555; margin: 0 2px; }
+.board-edit-btn { font-size: 9px !important; padding: 2px 6px !important; }
 .board-controls input[type="range"] {
   width: 60px; height: 4px;
   -webkit-appearance: none;

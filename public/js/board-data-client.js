@@ -78,3 +78,10 @@ const BOARD = {
     shipyard: '#9C27B0'
   }
 };
+
+// Deep copy of default positions for reset
+const BOARD_DEFAULTS = {
+  locations: Object.fromEntries(Object.entries(BOARD.locations).map(([k, v]) => [k, { x: v.x, y: v.y }])),
+  nonBuildable: Object.fromEntries(Object.entries(BOARD.nonBuildable).map(([k, v]) => [k, { x: v.x, y: v.y }])),
+  externalPorts: Object.fromEntries(Object.entries(BOARD.externalPorts).map(([k, v]) => [k, { x: v.x, y: v.y }]))
+};

@@ -28,13 +28,17 @@ router.get('/games/:id', requireLogin, (req, res) => {
     });
   }
 
+  const prefs = db.getUserPrefs(userId);
+  const customPositions = prefs.nodePositions || null;
+
   res.render('game', {
     game,
     state,
     version: gs.version,
     userId,
     isMember,
-    appVersion: APP_VERSION
+    appVersion: APP_VERSION,
+    customPositions: JSON.stringify(customPositions)
   });
 });
 
@@ -117,6 +121,24 @@ router.get('/api/games/:id/actions', requireLoginAPI, (req, res) => {
   const actions = getValidActions(state, userId);
 
   res.json({ actions });
+});
+
+// API: Save custom node positions
+router.post('/api/user/node-positions', requireLoginAPI, (req, res) => {
+  const userId = req.session.user.id;
+  const positions = req.body;
+  if (!positions || typeof positions !== 'object') {
+    return res.status(400).json({ error: 'Invalid positions data' });
+  }
+  db.setUserPrefs(userId, { nodePositions: positions });
+  res.json({ ok: true });
+});
+
+// API: Reset node positions to defaults
+router.delete('/api/user/node-positions', requireLoginAPI, (req, res) => {
+  const userId = req.session.user.id;
+  db.setUserPrefs(userId, { nodePositions: null });
+  res.json({ ok: true });
 });
 
 function sanitizeState(state, userId) {

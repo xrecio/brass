@@ -4,10 +4,44 @@
 const BoardRenderer = {
   svg: null,
   mapImage: null,
+  editMode: false,
+  dragging: null,
+  dragOffset: { x: 0, y: 0 },
+  customPositions: {},  // locId -> {x, y}
+  saveTimeout: null,
 
   init() {
     this.svg = document.getElementById('game-board');
+
+    // Load saved positions
+    if (typeof CUSTOM_POSITIONS === 'object' && CUSTOM_POSITIONS !== null) {
+      this.customPositions = CUSTOM_POSITIONS;
+      this.applyCustomPositions();
+    }
+
+    // SVG drag handlers
+    this.svg.addEventListener('mousemove', (e) => this.onDragMove(e));
+    this.svg.addEventListener('mouseup', () => this.onDragEnd());
+    this.svg.addEventListener('mouseleave', () => this.onDragEnd());
+
     this.render();
+  },
+
+  applyCustomPositions() {
+    for (const [locId, pos] of Object.entries(this.customPositions)) {
+      if (BOARD.locations[locId]) {
+        BOARD.locations[locId].x = pos.x;
+        BOARD.locations[locId].y = pos.y;
+      }
+      if (BOARD.nonBuildable[locId]) {
+        BOARD.nonBuildable[locId].x = pos.x;
+        BOARD.nonBuildable[locId].y = pos.y;
+      }
+      if (BOARD.externalPorts[locId]) {
+        BOARD.externalPorts[locId].x = pos.x;
+        BOARD.externalPorts[locId].y = pos.y;
+      }
+    }
   },
 
   render() {
@@ -101,13 +135,14 @@ const BoardRenderer = {
   },
 
   drawNonBuildable() {
-    for (const [, wp] of Object.entries(BOARD.nonBuildable)) {
+    for (const [id, wp] of Object.entries(BOARD.nonBuildable)) {
       const diamond = this.createSVG('polygon', {
         points: `${wp.x},${wp.y-6} ${wp.x+6},${wp.y} ${wp.x},${wp.y+6} ${wp.x-6},${wp.y}`,
-        fill: '#33333388',
-        stroke: '#66666688',
+        fill: this.editMode ? '#555588aa' : '#33333388',
+        stroke: this.editMode ? '#ffcc00' : '#66666688',
         'stroke-width': 1
       });
+      diamond.addEventListener('mousedown', (e) => this.onDragStart(e, id, 'nonBuildable'));
       this.svg.appendChild(diamond);
 
       const text = this.createSVG('text', {
@@ -124,7 +159,7 @@ const BoardRenderer = {
   },
 
   drawExternalPorts() {
-    for (const [, port] of Object.entries(BOARD.externalPorts)) {
+    for (const [id, port] of Object.entries(BOARD.externalPorts)) {
       // Dashed lines to connected locations
       for (const locId of port.connectedTo) {
         const loc = BOARD.locations[locId];
@@ -135,10 +170,13 @@ const BoardRenderer = {
         });
       }
 
-      const circle = this.createAndAppend('circle', {
+      const epCircle = this.createAndAppend('circle', {
         cx: port.x, cy: port.y, r: 10,
-        fill: '#1a2a3acc', stroke: '#4488cc', 'stroke-width': 1.5
+        fill: '#1a2a3acc',
+        stroke: this.editMode ? '#ffcc00' : '#4488cc',
+        'stroke-width': 1.5
       });
+      epCircle.addEventListener('mousedown', (e) => this.onDragStart(e, id, 'externalPort'));
 
       this.createAndAppend('text', {
         x: port.x, y: port.y + 3,
@@ -182,11 +220,12 @@ const BoardRenderer = {
         x: rx, y: ry, width: rectW, height: rectH,
         rx: 3, ry: 3,
         fill: '#d6c8a8aa',
-        stroke: '#8b7355',
-        'stroke-width': 1.5,
+        stroke: this.editMode ? '#ffcc00' : '#8b7355',
+        'stroke-width': this.editMode ? 2 : 1.5,
         'data-location': locId,
         class: 'board-location'
       });
+      rect.addEventListener('mousedown', (e) => this.onDragStart(e, locId, 'location'));
 
       // Location name inside the rectangle
       this.createAndAppend('text', {
@@ -321,5 +360,109 @@ const BoardRenderer = {
       el.style.cursor = '';
       el.onclick = null;
     });
+  },
+
+  // ============ EDIT MODE: DRAG NODES ============
+
+  toggleEditMode() {
+    this.editMode = !this.editMode;
+    const btn = document.getElementById('edit-nodes-btn');
+    const resetBtn = document.getElementById('reset-nodes-btn');
+    if (this.editMode) {
+      btn.textContent = 'Done';
+      btn.classList.add('btn-primary');
+      resetBtn.style.display = '';
+      this.svg.style.cursor = 'move';
+    } else {
+      btn.textContent = 'Move Nodes';
+      btn.classList.remove('btn-primary');
+      resetBtn.style.display = 'none';
+      this.svg.style.cursor = '';
+      this.savePositions();
+    }
+  },
+
+  svgPoint(e) {
+    const pt = this.svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    return pt.matrixTransform(this.svg.getScreenCTM().inverse());
+  },
+
+  onDragStart(e, nodeId, nodeType) {
+    if (!this.editMode) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const pt = this.svgPoint(e);
+    const source = nodeType === 'location' ? BOARD.locations[nodeId]
+      : nodeType === 'nonBuildable' ? BOARD.nonBuildable[nodeId]
+      : BOARD.externalPorts[nodeId];
+    if (!source) return;
+    this.dragging = { id: nodeId, type: nodeType };
+    this.dragOffset = { x: pt.x - source.x, y: pt.y - source.y };
+  },
+
+  onDragMove(e) {
+    if (!this.dragging) return;
+    const pt = this.svgPoint(e);
+    const newX = Math.round(pt.x - this.dragOffset.x);
+    const newY = Math.round(pt.y - this.dragOffset.y);
+    const d = this.dragging;
+
+    if (d.type === 'location' && BOARD.locations[d.id]) {
+      BOARD.locations[d.id].x = newX;
+      BOARD.locations[d.id].y = newY;
+    } else if (d.type === 'nonBuildable' && BOARD.nonBuildable[d.id]) {
+      BOARD.nonBuildable[d.id].x = newX;
+      BOARD.nonBuildable[d.id].y = newY;
+    } else if (d.type === 'externalPort' && BOARD.externalPorts[d.id]) {
+      BOARD.externalPorts[d.id].x = newX;
+      BOARD.externalPorts[d.id].y = newY;
+    }
+
+    this.customPositions[d.id] = { x: newX, y: newY };
+    this.render();
+  },
+
+  onDragEnd() {
+    if (!this.dragging) return;
+    this.dragging = null;
+    // Debounced save
+    clearTimeout(this.saveTimeout);
+    this.saveTimeout = setTimeout(() => this.savePositions(), 2000);
+  },
+
+  async savePositions() {
+    if (Object.keys(this.customPositions).length === 0) return;
+    try {
+      await fetch('/api/user/node-positions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(this.customPositions)
+      });
+    } catch (e) {
+      // silent fail
+    }
+  },
+
+  async resetPositions() {
+    this.customPositions = {};
+    // Reset BOARD data to defaults
+    for (const [locId, loc] of Object.entries(BOARD_DEFAULTS.locations)) {
+      BOARD.locations[locId].x = loc.x;
+      BOARD.locations[locId].y = loc.y;
+    }
+    for (const [id, wp] of Object.entries(BOARD_DEFAULTS.nonBuildable)) {
+      BOARD.nonBuildable[id].x = wp.x;
+      BOARD.nonBuildable[id].y = wp.y;
+    }
+    for (const [id, ep] of Object.entries(BOARD_DEFAULTS.externalPorts)) {
+      BOARD.externalPorts[id].x = ep.x;
+      BOARD.externalPorts[id].y = ep.y;
+    }
+    this.render();
+    try {
+      await fetch('/api/user/node-positions', { method: 'DELETE' });
+    } catch (e) {}
   }
 };

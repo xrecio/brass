@@ -30,6 +30,9 @@
         <div class="board-controls">
           <label>Map <input type="range" id="map-dim-slider" min="0" max="100" value="70"
                  oninput="BoardRenderer.setMapOpacity(this.value)"></label>
+          <span class="board-control-sep">|</span>
+          <button class="btn btn-sm board-edit-btn" id="edit-nodes-btn" onclick="BoardRenderer.toggleEditMode()">Move Nodes</button>
+          <button class="btn btn-sm" id="reset-nodes-btn" onclick="BoardRenderer.resetPositions()" style="display:none">Reset</button>
         </div>
         <svg id="game-board" viewBox="0 0 600 520" xmlns="http://www.w3.org/2000/svg"></svg>
       </div>
@@ -55,6 +58,7 @@
     let gameState = <%- JSON.stringify(state) %>;
     let stateVersion = <%= version %>;
     const IS_MEMBER = <%= isMember %>;
+    const CUSTOM_POSITIONS = <%- customPositions %>;
   </script>
   <script src="/js/board-data-client.js"></script>
   <script src="/js/board-renderer.js"></script>
