@@ -1436,7 +1436,7 @@ const GameUI = {
               const cubeColor = (type === 'ironWorks') ? '#d4740e' : '#888';
               html += ' [<span style="color:' + cubeColor + '">' + ld.cubes + '</span>]';
             }
-            html += ' <span class="tile-inc-circle tile-inc-inline">+' + ld.income + '</span>';
+            html += ' <span class="tile-inc-circle tile-inc-inline">' + ld.income + '</span>';
             html += ' <span class="tile-vp-hex tile-vp-inline">' + ld.vp + '</span>';
             html += '</div>';
           }
@@ -1447,7 +1447,7 @@ const GameUI = {
           html += '<div class="mat-detail">Next: ' + topLevel + ' — £' + tileData.cost;
           if (tileData.coal) html += ' +' + tileData.coal + '⬛';
           if (tileData.iron) html += ' +' + tileData.iron + '🟧';
-          html += ' → <span class="tile-inc-circle tile-inc-inline">+' + tileData.income + '</span>';
+          html += ' → <span class="tile-inc-circle tile-inc-inline">' + tileData.income + '</span>';
           html += ' <span class="tile-vp-hex tile-vp-inline">' + tileData.vp + '</span></div>';
         }
         html += '</div>';
