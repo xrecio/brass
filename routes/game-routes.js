@@ -44,7 +44,8 @@ router.get('/games/:id', requireLogin, (req, res) => {
     isMember,
     appVersion: APP_VERSION,
     customPositions: JSON.stringify(customPositions),
-    xaiPositions: JSON.stringify(xaiPositions)
+    xaiPositions: JSON.stringify(xaiPositions),
+    historyCount: db.getStateVersionCount(gameId)
   });
 });
 
@@ -131,6 +132,33 @@ router.get('/api/games/:id/actions', requireLoginAPI, (req, res) => {
   const actions = getValidActions(state, userId);
 
   res.json({ actions });
+});
+
+// API: Get state history info for a game
+router.get('/api/games/:id/history', requireLoginAPI, (req, res) => {
+  const gameId = parseInt(req.params.id);
+  const count = db.getStateVersionCount(gameId);
+  res.json({ count });
+});
+
+// API: Get state at specific version
+router.get('/api/games/:id/state/:version', requireLoginAPI, (req, res) => {
+  const gameId = parseInt(req.params.id);
+  const version = parseInt(req.params.version);
+  const userId = req.session.user.id;
+
+  const hist = db.getStateAtVersion(gameId, version);
+  if (!hist) return res.status(404).json({ error: 'Version not found' });
+
+  const state = JSON.parse(hist.state);
+  // Sanitize — hide other players' hands
+  for (const player of state.players) {
+    if (player.userId !== userId) {
+      player.handCount = player.hand.length;
+      player.hand = [];
+    }
+  }
+  res.json({ state, version: hist.version, ts: hist.ts });
 });
 
 // API: Set bot delay

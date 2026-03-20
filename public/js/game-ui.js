@@ -200,87 +200,86 @@ const GameUI = {
     return vps;
   },
 
-  // ============ TURN NAVIGATOR ============
+  // ============ TURN NAVIGATOR (server-side) ============
 
-  stateHistory: [],  // array of {state, version, logLen}
-  navIndex: -1,      // -1 = live, 0+ = viewing history
+  navVersion: -1,     // -1 = live, 0+ = viewing specific version
+  navTotalVersions: typeof HISTORY_COUNT !== 'undefined' ? HISTORY_COUNT : 0,
   isViewingHistory: false,
+  navCache: {},       // version -> state (client cache)
 
-  pushStateSnapshot() {
-    // Store current state in history (deduplicate by version)
-    const last = this.stateHistory[this.stateHistory.length - 1];
-    if (last && last.version === stateVersion) return;
-    this.stateHistory.push({
-      state: JSON.parse(JSON.stringify(gameState)),
-      version: stateVersion,
-      logLen: (gameState.log || []).length
-    });
-    // Keep max 200 snapshots
-    if (this.stateHistory.length > 200) this.stateHistory.shift();
+  async navFirst() {
+    this.navVersion = 0;
+    await this.fetchAndShowVersion();
   },
 
-  navFirst() {
-    if (this.stateHistory.length === 0) return;
-    this.navIndex = 0;
-    this.showHistoryState();
-  },
-
-  navPrev() {
-    if (this.stateHistory.length === 0) return;
-    if (this.navIndex === -1) {
-      this.navIndex = this.stateHistory.length - 2;
+  async navPrev() {
+    if (this.navVersion === -1) {
+      this.navVersion = this.navTotalVersions - 1;
     } else {
-      this.navIndex = Math.max(0, this.navIndex - 1);
+      this.navVersion = Math.max(0, this.navVersion - 1);
     }
-    this.showHistoryState();
+    await this.fetchAndShowVersion();
   },
 
-  navNext() {
-    if (this.navIndex === -1) return;
-    this.navIndex++;
-    if (this.navIndex >= this.stateHistory.length - 1) {
+  async navNext() {
+    if (this.navVersion === -1) return;
+    this.navVersion++;
+    if (this.navVersion >= this.navTotalVersions) {
       this.navLive();
       return;
     }
-    this.showHistoryState();
+    await this.fetchAndShowVersion();
   },
 
   navLive() {
-    this.navIndex = -1;
+    this.navVersion = -1;
     this.isViewingHistory = false;
     this.updateNavLabel();
     this.updateAll();
   },
 
-  showHistoryState() {
-    if (this.navIndex < 0 || this.navIndex >= this.stateHistory.length) {
-      this.navLive();
+  async fetchAndShowVersion() {
+    const v = this.navVersion;
+    if (v < 0) { this.navLive(); return; }
+
+    // Check cache
+    if (this.navCache[v]) {
+      this.showHistoryState(this.navCache[v]);
       return;
     }
+
+    try {
+      const res = await fetch('/api/games/' + GAME_ID + '/state/' + v);
+      if (!res.ok) { this.navLive(); return; }
+      const data = await res.json();
+      this.navCache[v] = data.state;
+      this.showHistoryState(data.state);
+    } catch (e) {
+      this.navLive();
+    }
+  },
+
+  showHistoryState(histState) {
     this.isViewingHistory = true;
-    const snap = this.stateHistory[this.navIndex];
-    // Temporarily replace gameState for rendering
     const realState = gameState;
-    gameState = snap.state;
+    gameState = histState;
     this.updateNavLabel();
     this.updateGameInfo();
     this.updatePlayerBar();
     this.updateLog();
+    this.updateActionPanel();
     BoardRenderer.render();
-    // Restore real state (don't affect polling/actions)
     gameState = realState;
   },
 
   updateNavLabel() {
     const label = document.getElementById('turn-nav-label');
     if (!label) return;
-    if (this.navIndex === -1) {
+    if (this.navVersion === -1) {
       label.textContent = 'Live';
       label.style.color = '#2ecc71';
     } else {
-      const snap = this.stateHistory[this.navIndex];
-      const era = snap.state.era === 'canal' ? 'C' : 'R';
-      label.textContent = (this.navIndex + 1) + '/' + this.stateHistory.length + ' [' + era + snap.state.round + ']';
+      label.textContent = (this.navVersion + 1) + '/' + this.navTotalVersions;
       label.style.color = '#e94560';
     }
   },
@@ -296,7 +295,7 @@ const GameUI = {
   },
 
   updateAll() {
-    this.pushStateSnapshot();
+    this.navTotalVersions = stateVersion + 1;
     // If viewing history, don't overwrite the view
     if (this.isViewingHistory) {
       this.updateNavLabel();
