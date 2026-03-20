@@ -21,11 +21,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const sessionDir = process.env.SESSION_DIR || path.join(__dirname, 'data', 'sessions');
 app.use(session({
-  store: new FileStore({ path: sessionDir, ttl: 7 * 24 * 60 * 60, retries: 0 }),
+  store: new FileStore({ path: sessionDir, ttl: 365 * 24 * 60 * 60, retries: 0, logFn: function(){} }),
   secret: process.env.SESSION_SECRET || 'brass-dev-secret-change-me',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 }
+  cookie: { maxAge: 365 * 24 * 60 * 60 * 1000 }
 }));
 
 // Auth middleware - make user available to all views
