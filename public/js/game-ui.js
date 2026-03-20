@@ -1434,7 +1434,7 @@ const GameUI = {
             if (ld.iron) html += ' <span title="Iron needed">🟧</span>';
             if (ld.cubes) {
               const cubeColor = (type === 'ironWorks') ? '#d4740e' : '#888';
-              html += ' [<span style="color:' + cubeColor + '">' + ld.cubes + '</span>]';
+              html += ' <span style="color:' + cubeColor + '">[' + ld.cubes + ']</span>';
             }
             html += ' <span class="tile-inc-circle tile-inc-inline">' + ld.income + '</span>';
             html += ' <span class="tile-vp-hex tile-vp-inline">' + ld.vp + '</span>';
@@ -1445,8 +1445,8 @@ const GameUI = {
 
         if (tileData) {
           html += '<div class="mat-detail">Next: ' + topLevel + ' — £' + tileData.cost;
-          if (tileData.coal) html += ' +' + tileData.coal + '⬛';
-          if (tileData.iron) html += ' +' + tileData.iron + '🟧';
+          if (tileData.coal) html += ' ⬛';
+          if (tileData.iron) html += ' 🟧';
           html += ' → <span class="tile-inc-circle tile-inc-inline">' + tileData.income + '</span>';
           html += ' <span class="tile-vp-hex tile-vp-inline">' + tileData.vp + '</span></div>';
         }
@@ -1522,7 +1522,13 @@ const GameUI = {
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         ts = '<span class="log-ts">' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear() + ' ' + d.toLocaleTimeString() + '</span> ';
       }
-      return '<div class="log-entry"' + style + '>' + ts + l.msg + '</div>';
+      // Color coal/iron cube mentions in logs
+      let msg = l.msg || '';
+      msg = msg.replace(/(\d+) iron cubes?/g, '<span style="color:#d4740e">$1 iron cubes</span>');
+      msg = msg.replace(/(\d+) coal cubes?/g, '<span style="color:#888">$1 coal cubes</span>');
+      msg = msg.replace(/(\d+) sold to market/g, '<span style="color:#d4a843">$1 sold to market</span>');
+      msg = msg.replace(/(\d+) on tile/g, '<span style="color:#aaa">$1 on tile</span>');
+      return '<div class="log-entry"' + style + '>' + ts + msg + '</div>';
     }).join('');
   },
 

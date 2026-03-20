@@ -25,21 +25,21 @@
         <div class="left-panel-content" id="left-panel-content">
           <div class="panel-section" id="game-info"></div>
           <div id="player-bar"></div>
-          <div class="panel-section turn-nav" id="turn-nav">
-            <div style="display:flex;align-items:center;gap:4px;justify-content:center">
-              <button class="btn btn-sm" onclick="GameUI.navFirst()" title="First">⏮</button>
-              <button class="btn btn-sm" onclick="GameUI.navPrev()" title="Previous">◀</button>
-              <span id="turn-nav-label" style="font-size:9px;min-width:60px;text-align:center">Live</span>
-              <button class="btn btn-sm" onclick="GameUI.navNext()" title="Next">▶</button>
-              <button class="btn btn-sm" onclick="GameUI.navLive()" title="Live">⏭</button>
-            </div>
-          </div>
           <div class="panel-section legend-panel">
             <div class="legend-row"><span class="legend-swatch" style="background:#f5f0ea"></span> <strong>M</strong> - Cotton Mill</div>
             <div class="legend-row"><span class="legend-swatch" style="background:#333"></span> <strong>C</strong> - Coal Mine</div>
             <div class="legend-row"><span class="legend-swatch" style="background:#d4740e"></span> <strong>I</strong> - Iron Works</div>
             <div class="legend-row"><span class="legend-swatch" style="background:#2196F3"></span> <strong>P</strong> - Port</div>
             <div class="legend-row"><span class="legend-swatch" style="background:#6d432a"></span> <strong>S</strong> - Shipyard</div>
+          </div>
+          <div class="panel-section turn-nav" id="turn-nav">
+            <div style="display:flex;align-items:center;gap:6px;justify-content:center">
+              <button class="btn nav-btn" onclick="GameUI.navFirst()" title="First">⏮</button>
+              <button class="btn nav-btn" onclick="GameUI.navPrev()" title="Previous">◀</button>
+              <span id="turn-nav-label" style="font-size:10px;min-width:60px;text-align:center">Live</span>
+              <button class="btn nav-btn" onclick="GameUI.navNext()" title="Next">▶</button>
+              <button class="btn nav-btn" onclick="GameUI.navLive()" title="Live">⏭</button>
+            </div>
           </div>
         </div>
       </div>

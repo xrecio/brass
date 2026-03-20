@@ -207,8 +207,8 @@ a:hover { text-decoration: underline; }
 .vp-hover-trigger { cursor: help; }
 
 /* Turn navigator */
-.turn-nav { padding: 4px 6px !important; }
-.turn-nav .btn { font-size: 9px !important; padding: 1px 4px !important; min-width: 18px; }
+.turn-nav { padding: 6px !important; margin-top: auto; }
+.nav-btn { font-size: 12px !important; padding: 4px 8px !important; min-width: 28px; }
 
 /* Industry legend */
 .legend-panel { font-size: 9px; }

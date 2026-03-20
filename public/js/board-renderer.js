@@ -590,6 +590,19 @@ const BoardRenderer = {
         fill: this.minimalMode ? pColor : '#fff',
         'font-weight': 'bold', 'pointer-events': 'none'
       }).textContent = (typeof GameUI !== 'undefined' && GameUI.calculateLiveVP) ? GameUI.calculateLiveVP()[i] || 0 : p.vp;
+
+      // Hover area for VP breakdown
+      const hoverRect = this.createAndAppend('rect', {
+        x: cx - hr, y: hcy - hr, width: hr * 2, height: hr * 2,
+        fill: 'transparent', cursor: 'help'
+      });
+      const playerIdx = i;
+      hoverRect.addEventListener('mouseenter', (e) => {
+        if (typeof GameUI !== 'undefined') GameUI.showVPBreakdown(e, playerIdx);
+      });
+      hoverRect.addEventListener('mouseleave', () => {
+        if (typeof GameUI !== 'undefined') GameUI.hideVPBreakdown();
+      });
       // Name below
       // Name centered between hexagon bottom and panel bottom
       const hexBottom = pos.y + 18 + 9; // hcy + hr
