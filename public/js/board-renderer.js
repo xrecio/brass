@@ -793,6 +793,19 @@ const BoardRenderer = {
       // Filled slot
       const fillColor = BOARD.playerColors[slot.owner];
 
+      // Flipped: hexagon outline behind the slot
+      if (slot.flipped) {
+        const hr = half + 3;
+        const hexPts = [0,1,2,3,4,5].map(n => {
+          const a = Math.PI / 180 * (60 * n - 90);
+          return (cx + hr * Math.cos(a)).toFixed(1) + ',' + (cy + hr * Math.sin(a)).toFixed(1);
+        }).join(' ');
+        this.createAndAppend('polygon', {
+          points: hexPts,
+          fill: 'none', stroke: '#cc336688', 'stroke-width': 1
+        });
+      }
+
       this.createAndAppend('rect', {
         x: cx - half, y: cy - half,
         width: size, height: size,
@@ -804,11 +817,23 @@ const BoardRenderer = {
         class: 'board-slot filled'
       });
 
+      // Industry color stripe on top
+      const stripeColors = {
+        cottonMill: '#f5f0ea', coalMine: '#555', ironWorks: '#d4740e',
+        port: '#2196F3', shipyard: '#6d432a'
+      };
+      this.createAndAppend('rect', {
+        x: cx - half, y: cy - half,
+        width: size, height: 2.5, rx: 1,
+        fill: stripeColors[slot.industryType] || '#888',
+        'pointer-events': 'none'
+      });
+
       if (!this.hideIcons) {
         this.createAndAppend('text', {
           x: cx, y: cy + 3,
           'text-anchor': 'middle', 'font-size': '7', 'font-weight': 'bold',
-          fill: slot.industryType === 'coalMine' ? '#fff' : '#333',
+          fill: '#333',
           'pointer-events': 'none'
         }).textContent = BOARD.industryIcons[slot.industryType] + slot.level;
       }
