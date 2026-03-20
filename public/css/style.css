@@ -527,9 +527,11 @@ body.minimal-mode .money-disc.bronze { background: transparent; color: #CD7F32; 
   background: #111;
   color: var(--gold);
   font-size: 11px;
-  cursor: pointer;
   user-select: none;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 .log-toggle:hover { background: #1a1a1a; }
 .log-panel {
@@ -545,6 +547,14 @@ body.minimal-mode .money-disc.bronze { background: transparent; color: #CD7F32; 
   overflow: hidden;
 }
 .log-entry { font-size: 10px; color: var(--text-muted); padding: 1px 0; font-family: monospace; }
+.log-filters { display: inline-flex; gap: 2px; margin-left: 8px; }
+.log-filter-btn {
+  padding: 1px 5px; font-size: 8px; border: 1px solid #555;
+  border-radius: 3px; background: none; color: var(--text-muted);
+  cursor: pointer;
+}
+.log-filter-btn:hover { background: var(--surface); }
+.log-filter-btn.active { background: var(--surface-light); color: #fff; }
 
 /* Wiki */
 .wiki-container { max-width: 800px; margin: 0 auto; padding: 20px; }

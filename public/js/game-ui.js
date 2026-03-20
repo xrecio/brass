@@ -1043,12 +1043,37 @@ const GameUI = {
 
   // ============ LOG ============
 
+  logFilter: 'all', // 'all' or a username
+
+  setLogFilter(filter) {
+    this.logFilter = filter;
+    this.updateLog();
+  },
+
   updateLog() {
     const panel = document.getElementById('log-panel');
+    const filtersEl = document.getElementById('log-filters');
     const logs = gameState.log || [];
-    const recent = logs.slice(-20);
+
+    // Build filter buttons
+    if (filtersEl) {
+      let fhtml = '<button class="log-filter-btn' + (this.logFilter === 'all' ? ' active' : '') + '" onclick="GameUI.setLogFilter(\'all\')">All</button>';
+      for (const p of gameState.players) {
+        const active = this.logFilter === p.username ? ' active' : '';
+        fhtml += '<button class="log-filter-btn' + active + '" style="border-color:' + BOARD.playerColors[p.seat] + '" onclick="GameUI.setLogFilter(\'' + p.username + '\')">' + p.username.substring(0, 6) + '</button>';
+      }
+      filtersEl.innerHTML = fhtml;
+    }
+
+    // Filter logs
+    let filtered = logs;
+    if (this.logFilter !== 'all') {
+      filtered = logs.filter(l => l.msg && l.msg.includes(this.logFilter));
+    }
+
+    // Show last 30, reversed (newest first)
+    const recent = filtered.slice(-30).reverse();
     panel.innerHTML = recent.map(l => {
-      // Find player color from message
       let color = '';
       for (const p of gameState.players) {
         if (l.msg && l.msg.includes(p.username)) {
@@ -1059,10 +1084,6 @@ const GameUI = {
       const style = color ? ' style="color:' + color + '"' : '';
       return '<div class="log-entry"' + style + '>' + l.msg + '</div>';
     }).join('');
-    const wrapper = document.getElementById('log-wrapper');
-    if (!wrapper.classList.contains('collapsed')) {
-      panel.scrollTop = panel.scrollHeight;
-    }
   },
 
   toggleLog() {

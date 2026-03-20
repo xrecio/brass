@@ -85,7 +85,10 @@
 
     <!-- Collapsible log -->
     <div class="log-wrapper collapsed" id="log-wrapper">
-      <div class="log-toggle" onclick="GameUI.toggleLog()">Game Log <span id="log-arrow">&#9650;</span></div>
+      <div class="log-toggle">
+        <span onclick="GameUI.toggleLog()" style="cursor:pointer">Game Log <span id="log-arrow">&#9650;</span></span>
+        <span class="log-filters" id="log-filters"></span>
+      </div>
       <div class="log-panel" id="log-panel"></div>
     </div>
   </div>
