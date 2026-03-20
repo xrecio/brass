@@ -156,6 +156,58 @@ const GameUI = {
     document.addEventListener('mouseup', () => { dragging = false; });
   },
 
+  // Calculate real-time VP breakdown per player
+  calculateVPBreakdown() {
+    const s = gameState;
+    const breakdowns = s.players.map(() => ({ scored: 0, tiles: 0, links: 0, money: 0, total: 0, details: [] }));
+
+    for (let i = 0; i < s.players.length; i++) {
+      breakdowns[i].scored = s.players[i].vp;
+    }
+
+    // Flipped tiles
+    for (const [locId, loc] of Object.entries(s.board.locations)) {
+      for (const slot of loc.slots) {
+        if (slot.flipped && slot.owner !== null) {
+          const td = INDUSTRIES[slot.industryType]?.levels[slot.level];
+          if (td) {
+            breakdowns[slot.owner].tiles += td.vp;
+            breakdowns[slot.owner].details.push((INDUSTRIES[slot.industryType]?.name || '') + ' L' + slot.level + ' at ' + (BOARD.locations[locId]?.name || locId) + ': ' + td.vp + 'VP');
+          }
+        }
+      }
+    }
+
+    // Links
+    for (const link of Object.values(s.board.links)) {
+      if (link.owner !== null && link.type) {
+        let vp = 0;
+        for (const locId of [link.from, link.to]) {
+          const loc = s.board.locations[locId];
+          if (!loc) continue;
+          for (const slot of loc.slots) {
+            if (slot.flipped && slot.owner !== null) vp++;
+          }
+        }
+        if (vp > 0) {
+          breakdowns[link.owner].links += vp;
+          const from = BOARD.locations[link.from]?.name || BOARD.nonBuildable[link.from]?.name || link.from;
+          const to = BOARD.locations[link.to]?.name || BOARD.nonBuildable[link.to]?.name || link.to;
+          breakdowns[link.owner].details.push(link.type + ' ' + from + '-' + to + ': ' + vp + 'VP');
+        }
+      }
+    }
+
+    // Money
+    for (let i = 0; i < s.players.length; i++) {
+      const mv = Math.floor(s.players[i].money / 10);
+      breakdowns[i].money = mv;
+      breakdowns[i].total = breakdowns[i].scored + breakdowns[i].tiles + breakdowns[i].links + breakdowns[i].money;
+    }
+
+    return breakdowns;
+  },
+
   // Calculate real-time projected VP for each player
   calculateLiveVP() {
     const s = gameState;
@@ -284,6 +336,39 @@ const GameUI = {
     }
   },
 
+  showVPBreakdown(event, playerIdx) {
+    const bd = this.calculateVPBreakdown()[playerIdx];
+    if (!bd) return;
+    let popup = document.getElementById('vp-breakdown');
+    if (!popup) {
+      popup = document.createElement('div');
+      popup.id = 'vp-breakdown';
+      popup.className = 'vp-breakdown-popup';
+      document.body.appendChild(popup);
+    }
+    let html = '<div class="vp-bd-title">VP Breakdown</div>';
+    html += '<div class="vp-bd-row">Scored (prev eras): <strong>' + bd.scored + '</strong></div>';
+    html += '<div class="vp-bd-row">Flipped tiles: <strong>' + bd.tiles + '</strong></div>';
+    html += '<div class="vp-bd-row">Links: <strong>' + bd.links + '</strong></div>';
+    html += '<div class="vp-bd-row">Money (£' + gameState.players[playerIdx].money + '/10): <strong>' + bd.money + '</strong></div>';
+    html += '<div class="vp-bd-total">Total: <strong>' + bd.total + '</strong></div>';
+    if (bd.details.length > 0) {
+      html += '<div class="vp-bd-details">';
+      for (const d of bd.details) html += '<div class="vp-bd-detail">' + d + '</div>';
+      html += '</div>';
+    }
+    popup.innerHTML = html;
+    const rect = event.target.closest('.vp-hover-trigger').getBoundingClientRect();
+    popup.style.left = (rect.right + 8) + 'px';
+    popup.style.top = rect.top + 'px';
+    popup.style.display = 'block';
+  },
+
+  hideVPBreakdown() {
+    const el = document.getElementById('vp-breakdown');
+    if (el) el.style.display = 'none';
+  },
+
   leftPanelCollapsed: false,
 
   toggleLeftPanel() {
@@ -347,6 +432,7 @@ const GameUI = {
     const currentSeat = state.turnOrder[state.currentPlayerIndex];
 
     const liveVPs = this.calculateLiveVP();
+    const breakdowns = this.calculateVPBreakdown();
 
     bar.innerHTML = state.players.map((p, idx) => {
       const isCurrent = p.seat === currentSeat && state.phase === 'actions';
@@ -363,7 +449,7 @@ const GameUI = {
         + p.username + (p.isBot ? ' (Bot)' : '') + (isCurrent ? ' ▸' : '')
         + '</div>'
         + '<div class="player-stats-grid">'
-        + '<span class="pstat"><span class="tile-vp-hex tile-vp-inline">' + liveVP + '</span></span>'
+        + '<span class="pstat vp-hover-trigger" onmouseenter="GameUI.showVPBreakdown(event,' + idx + ')" onmouseleave="GameUI.hideVPBreakdown()"><span class="tile-vp-hex tile-vp-inline">' + liveVP + '</span></span>'
         + '<span class="pstat" title="Income: square ' + p.income + '"><span class="tile-inc-circle tile-inc-inline">' + (INCOME_TRACK[p.income] !== undefined ? (INCOME_TRACK[p.income] >= 0 ? '+' : '') + INCOME_TRACK[p.income] : p.income) + '</span></span>'
         + '<span class="pstat" title="Cards">' + cardCount + ' cards</span>'
         + '</div>'
@@ -1344,9 +1430,9 @@ const GameUI = {
           if (showDetail && ld) {
             html += '<div class="mat-level-stats">';
             html += '£' + ld.cost;
-            if (ld.coal) html += ' <span style="color:#555" title="Coal cubes needed">' + ld.coal + '⬛</span>';
-            if (ld.iron) html += ' <span style="color:#d4740e" title="Iron cubes needed">' + ld.iron + '🟧</span>';
-            if (ld.cubes) html += ' <span style="color:#888" title="Resource cubes placed">[' + ld.cubes + ']</span>';
+            if (ld.coal) html += ' <span title="Coal needed">⬛</span>';
+            if (ld.iron) html += ' <span title="Iron needed">🟧</span>';
+            if (ld.cubes) html += ' [<span style="color:' + (ld.iron ? '#d4740e' : '#555') + '">' + ld.cubes + '</span>]';
             html += ' <span class="tile-inc-circle tile-inc-inline">+' + ld.income + '</span>';
             html += ' <span class="tile-vp-hex tile-vp-inline">' + ld.vp + '</span>';
             html += '</div>';
