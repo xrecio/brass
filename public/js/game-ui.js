@@ -1432,7 +1432,10 @@ const GameUI = {
             html += '£' + ld.cost;
             if (ld.coal) html += ' <span title="Coal needed">⬛</span>';
             if (ld.iron) html += ' <span title="Iron needed">🟧</span>';
-            if (ld.cubes) html += ' [<span style="color:' + (ld.iron ? '#d4740e' : '#555') + '">' + ld.cubes + '</span>]';
+            if (ld.cubes) {
+              const cubeColor = (type === 'ironWorks') ? '#d4740e' : '#888';
+              html += ' [<span style="color:' + cubeColor + '">' + ld.cubes + '</span>]';
+            }
             html += ' <span class="tile-inc-circle tile-inc-inline">+' + ld.income + '</span>';
             html += ' <span class="tile-vp-hex tile-vp-inline">' + ld.vp + '</span>';
             html += '</div>';
