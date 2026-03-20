@@ -516,7 +516,7 @@ const BoardRenderer = {
       // Silver £5 discs and bronze £1 discs
       const fives = Math.floor(spent / 5);
       const ones = spent % 5;
-      let dx = pos.x - panelW/2 + 12;
+      let dx = pos.x - panelW/2 + 16;
       for (let d = 0; d < Math.min(fives, 8); d++) {
         this.createAndAppend('circle', {
           cx: dx + d * 6, cy: y - 1, r: 2.5,
