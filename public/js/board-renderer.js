@@ -124,6 +124,7 @@ const BoardRenderer = {
       this.savePositions();
     }
     this.updateEditButtons();
+    this.render();
   },
 
   getScale(id) {
